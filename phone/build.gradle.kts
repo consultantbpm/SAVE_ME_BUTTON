@@ -61,4 +61,5 @@ dependencies {
 
     implementation(libs.play.services.wearable)
     implementation(libs.play.services.location)
+    implementation(libs.billing.ktx)
 }

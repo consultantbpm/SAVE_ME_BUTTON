@@ -8,9 +8,11 @@ object WearPaths {
     const val SOS_PROGRESS = "/savemebutton/sos_progress"
     const val SOS_CANCEL = "/savemebutton/sos_cancel"
     const val SOS_STOP = "/savemebutton/sos_stop"
+    const val SOS_SKIP = "/savemebutton/sos_skip"
     const val LOC_REQUEST = "/savemebutton/loc_request"
     const val LOC_REPLY = "/savemebutton/loc_reply"
     const val SIREN = "/savemebutton/siren"
+    const val OPEN_WATCH_UI = "/savemebutton/open_watch_ui"
 }
 
 val SaveMeJson: Json = Json {

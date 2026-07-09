@@ -15,6 +15,7 @@ class PhoneApplication : Application() {
     val appScope: CoroutineScope by lazy { CoroutineScope(SupervisorJob()) }
 
     val configRepository: ConfigRepository by lazy { ConfigRepository(this) }
+    val premiumManager: PremiumManager by lazy { PremiumManager(this) }
     val telephony: PhoneTelephony by lazy { PhoneTelephony(this) }
     val locationProvider: PhoneLocationProvider by lazy { PhoneLocationProvider(this) }
     val locationResponder: PhoneLocationResponder by lazy {

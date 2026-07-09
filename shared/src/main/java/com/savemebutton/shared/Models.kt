@@ -21,11 +21,13 @@ data class SosConfig(
     val holdSeconds: Int = 3,
     val cancelTaps: Int = 3,
     val countdownSeconds: Int = 5,
-    val perContactWaitSeconds: Int = 30,
+    val perContactWaitSeconds: Int = 20,
+    val sirenEnabled: Boolean = true,
     val sirenTarget: SirenTarget = SirenTarget.BOTH,
     val sirenSound: SirenSound = SirenSound.TWO_TONE,
     val sirenVolume: Float = 1.0f,
-    val loudMinutePulse: Boolean = false,
+    val loudMinutePulse: Boolean = true,
+    val voicemailTrapEscape: Boolean = true,
 ) {
     fun normalized(): SosConfig {
         val padded = (contacts + List(3) { Contact() }).take(3)
@@ -49,6 +51,23 @@ data class SosCoords(
     val lon: Double,
 ) {
     fun mapsUrl(): String = "https://maps.google.com/?q=%.5f,%.5f".format(lat, lon)
+
+    /** Degrees-minutes-seconds, e.g. `44°27'39.7"N 26°07'22.7"E`. */
+    fun dmsString(): String {
+        fun part(value: Double, posHemi: Char, negHemi: Char): String {
+            val absV = kotlin.math.abs(value)
+            val deg = absV.toInt()
+            val minFull = (absV - deg) * 60.0
+            val min = minFull.toInt()
+            val sec = (minFull - min) * 60.0
+            val hemi = if (value >= 0) posHemi else negHemi
+            return "%d°%02d'%.1f\"%c".format(deg, min, sec, hemi)
+        }
+        return "${part(lat, 'N', 'S')} ${part(lon, 'E', 'W')}"
+    }
+
+    /** What gets appended to the SMS body: human-readable DMS plus tap-to-map URL. */
+    fun smsLine(): String = "${dmsString()} ${mapsUrl()}"
 }
 
 @Serializable
@@ -63,6 +82,7 @@ data class SirenCommand(
     val start: Boolean,
     val sound: SirenSound = SirenSound.TWO_TONE,
     val volume: Float = 1.0f,
+    val rampSeconds: Float = 0f,
 )
 
 @Serializable

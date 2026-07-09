@@ -3,6 +3,9 @@ package com.savemebutton.phone.presentation
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.savemebutton.phone.PhoneApplication
+import com.savemebutton.phone.PremiumManager
+import com.savemebutton.phone.billing.EntitlementBus
+import com.savemebutton.phone.billing.SaveMeBilling
 import com.savemebutton.shared.Contact
 import com.savemebutton.shared.SirenSound
 import com.savemebutton.shared.SirenTarget
@@ -12,8 +15,19 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+
+/**
+ * UI-facing snapshot of the OPTIONAL, non-safety premium tier. Used ONLY to
+ * gate the cosmetic custom-SMS-body editor; never consulted on the SOS path.
+ */
+data class PremiumUiState(
+    val isPremium: Boolean = false,
+    val hasFullAccess: Boolean = true,
+    val trialRemainingMs: Long = 0L,
+)
 
 class MainViewModel(app: PhoneApplication) : AndroidViewModel(app) {
 
@@ -21,7 +35,29 @@ class MainViewModel(app: PhoneApplication) : AndroidViewModel(app) {
     private val watchBridge = app.watchSyncBridge
     private val sosHandler = app.sosHandler
     private val siren = app.siren
+    private val premiumManager: PremiumManager = app.premiumManager
     private var previewJob: Job? = null
+
+    /** The immutable default SMS body free users always keep (fully functional). */
+    val defaultSmsBody: String = SosConfig().smsBody
+
+    private fun readPremium() = PremiumUiState(
+        isPremium = premiumManager.isPremium,
+        hasFullAccess = premiumManager.hasFullAccess,
+        trialRemainingMs = premiumManager.remainingTrialTimeMs,
+    )
+
+    /** Re-emits whenever [EntitlementBus] is bumped (purchase / restore / sync). */
+    val premium: StateFlow<PremiumUiState> =
+        EntitlementBus.version
+            .map { readPremium() }
+            .stateIn(viewModelScope, SharingStarted.Eagerly, readPremium())
+
+    private val _priceText = MutableStateFlow(SaveMeBilling.PRICE_FALLBACK)
+    val priceText: StateFlow<String> = _priceText
+
+    /** Called by the Activity's billing client once Play returns the real price. */
+    fun setPriceText(value: String) { _priceText.value = value }
 
     val saved: StateFlow<SosConfig> = repo.config
         .stateIn(viewModelScope, SharingStarted.Eagerly, repo.config.value)
@@ -43,7 +79,13 @@ class MainViewModel(app: PhoneApplication) : AndroidViewModel(app) {
         }
     }
 
+    /**
+     * Edits the custom SMS body. This is the ONLY premium-gated (cosmetic)
+     * control: free users keep the default message. No-op without full access;
+     * the sending path is unaffected and always works.
+     */
     fun updateSmsBody(body: String) {
+        if (!premiumManager.hasFullAccess) return
         _draft.value = _draft.value.copy(smsBody = body)
     }
 

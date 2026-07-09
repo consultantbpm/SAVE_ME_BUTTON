@@ -2,7 +2,7 @@
 
 Single source of truth for behavior. Update before commit, not after.
 
-**Last updated:** 2026-04-28
+**Last updated:** 2026-05-02 (SMS coordinates appended in DMS + maps URL; TEST confirmation dialog; voicemail-trap-escape SKIP; perContactWait default 30→20; phone localization for de/es/fr/ja/ko/ro/zh)
 
 ---
 
@@ -20,28 +20,40 @@ Persisted on phone (SharedPreferences `savemebutton_prefs`) and mirrored to watc
 |---|---|---|---|---|
 | `contacts[0..2].name` | String | `""` | — | Display label only. |
 | `contacts[0..2].number` | String | `""` | — | E.164 preferred. Plain digits accepted. |
-| `smsBody` | String | `"I need help. My location:"` | — | Coordinates appended at send time. |
+| `smsBody` | String | `"I need help. My location:"` | — | Coordinates appended at send time as `<DMS> <maps URL>` (e.g. `44°27'39.7"N 26°07'22.7"E https://maps.google.com/?q=44.46103,26.12297`). DMS is human-readable; URL is tap-to-map. |
 | `holdSeconds` | Int | `3` | 3..5 | Upper-button hold needed to trigger. |
 | `cancelTaps` | Int | `3` | 3..5 | Screen taps within 1.2 s to cancel/stop. |
 | `countdownSeconds` | Int | `5` | 5..10 | Pre-sequence countdown (only before first contact). |
-| `perContactWaitSeconds` | Int | `30` | 15..60 | Per-call wait for offhook before escalating. |
-| `sirenTarget` | Enum | `BOTH` | NONE / WATCH / PHONE / BOTH | Which device(s) play the alert siren during a sequence. |
-| `sirenSound` | Enum | `TWO_TONE` | TWO_TONE / KLAXON / WHOOP / PULSE | Synthesized waveform. |
+| `perContactWaitSeconds` | Int | `20` | 15..60 | Per-call wait for offhook before escalating. |
+| `sirenEnabled` | Bool | `true` | — | Master on/off for the entire alert-sound section (toggle at top of Alert sound). When false, both main siren and minute-pulse are gated off regardless of `sirenTarget`. UI hides target/sound/preview/volume/loud-burst rows when this is off. |
+| `sirenTarget` | Enum | `BOTH` | NONE / WATCH / PHONE / BOTH | Which device(s) play the alert siren during a sequence. UI exposes all four as chips; labels: Off / Watch / Phone / Both. `NONE` = siren disabled entirely (independently of `sirenEnabled`). |
+| `sirenSound` | Enum | `TWO_TONE` | TWO_TONE / KLAXON / WHOOP / PULSE | Synthesized waveform. UI labels: Two-tone / Klaxon / Whoop / Pulse. |
 | `sirenVolume` | Float | `1.0` | 0..1 | AudioTrack track volume. |
-| `loudMinutePulse` | Bool | `false` | — | If on: 2-s siren burst every 60 s during sequence. |
+| `loudMinutePulse` | Bool | `true` | — | If on: 2-s siren burst every 60 s during sequence (until SOS is saved/answered/canceled). UI label: "Loud burst every minute until saved". |
+| `voicemailTrapEscape` | Bool | `true` | — | If the answered call (contacts #1 or #2) is voicemail, the watch shows a big SKIP button on the `CallActive` screen — tapping it programmatically ends the call (`TelecomManager.endCall`, API 28+) and the orchestrator continues to the next eligible contact (SMS+call). No second-step confirmation; the button itself is the confirmation. Skip is unavailable on the last eligible contact (nothing to escalate to). When disabled, `CallActive` is terminal as before. |
 
 If any contact's `number` is blank when SOS triggers, that slot is skipped (in every cycle).
 
-Settings on the phone use a draft/saved model: edits stay in draft until **SAVE** is tapped (which persists + pushes to watch). **TEST** does Save + runs the real SOS sequence locally on the phone (real SMS, real call).
+Settings on the phone use a draft/saved model: edits stay in draft until **SAVE** is tapped (which persists + pushes to watch). **TEST** opens a confirmation dialog (`test_dialog_message`) explaining that real SMS and a real call will be sent and recommending testing from the watch with an active SIM where possible. Tapping **START TEST** in the dialog runs Save + the real SOS sequence locally on the phone.
 
 ---
 
 ## Trigger
 
-- Hardware: `KeyEvent.KEYCODE_STEM_PRIMARY` on watch.
-- Activation: `onKeyDown` schedules a `Handler.postDelayed` for `holdSeconds * 1000 ms`. If the user is still holding when the timer fires, the SOS sequence starts immediately — the user does **not** need to release the button. Release before threshold cancels the pending fire.
+Two activation paths, both end in `viewModel.trigger()`:
+
+**Primary — any launch fires the SOS:**
+On cold-start (`savedInstanceState == null`), `MainActivity.onCreate` calls `viewModel.trigger()` unconditionally — regardless of intent action/category. The `isPanicLaunch` filter was removed because device-specific launcher intents (OnePlus Watch 2 in particular) don't always include the standard `ACTION_MAIN` + `CATEGORY_LAUNCHER` flags, making the filter too strict and resulting in users seeing the Idle screen instead of the countdown when they tap the launcher icon. `onNewIntent` also unconditionally re-triggers (the orchestrator silently ignores re-entry while non-Idle). The triple-tap cancel window remains the user's escape hatch for accidental opens.
+
+**Fallback — in-activity hold (when no shortcut is bound):**
+- Hardware: `KeyEvent.KEYCODE_STEM_PRIMARY` **or** `KEYCODE_VOLUME_DOWN` delivered to `MainActivity.onKeyDown` while the activity has focus. Both are accepted because OnePlus Watch 2's upper button emits `KEY_VOLUMEDOWN` at the kernel level (verified via `getevent` on `/dev/input/event1` qpnp_pon) instead of the standard Wear OS `STEM_PRIMARY`. `isTriggerKey()` accepts both keycodes.
+- `onKeyDown` schedules `Handler.postDelayed(triggerRunnable, holdSeconds * 1000 ms)`. If still held when the timer fires, SOS triggers. Release before threshold cancels.
 - `onKeyLongPress` is consumed (returns `true`) so the system long-press-power menu does not appear.
-- Trigger is ignored while `SosState != Idle` (no re-entry).
+- Only effective when `MainActivity` is foreground and the OS does not consume the key for a shortcut.
+
+**Re-entry guard:** `SosOrchestrator.trigger()` ignores calls while `state != Idle` — both paths are safe to invoke multiple times.
+
+**Side effect of the auto-trigger:** opening Save Me Button from the app drawer also fires `ACTION_MAIN` + `CATEGORY_LAUNCHER`, so it starts the countdown. The triple-tap cancel window is the user's escape hatch for accidental opens.
 
 The phone's **TEST** button calls `PhoneSosHandler.triggerLocal(currentConfig)`. It runs its own countdown first.
 
@@ -134,9 +146,11 @@ Both watch and phone use `FusedLocationProviderClient`.
 | `/savemebutton/sos_progress` | phone → watch (Message) | serialized `SosState` |
 | `/savemebutton/sos_cancel` | reserved (unused) | — |
 | `/savemebutton/sos_stop` | watch → phone or phone → watch (Message) | empty — orchestrator stops + transitions to `Stopped` |
+| `/savemebutton/sos_skip` | watch → phone (Message) | empty — sets phone-side `skipFlag`, ends current call, escalates to next contact (PHONE route only). |
 | `/savemebutton/loc_request` | watch → phone (Message) | empty — phone fetches and replies |
 | `/savemebutton/loc_reply` | phone → watch (Message) | serialized `SosCoords` (empty bytes if no fix) |
-| `/savemebutton/siren` | bidirectional (Message) | serialized `SirenCommand { start, sound, volume }` |
+| `/savemebutton/siren` | bidirectional (Message) | serialized `SirenCommand { start, sound, volume, rampSeconds }` |
+| `/savemebutton/open_watch_ui` | phone → watch (Message) | empty — watch starts `MainActivity` with `EXTRA_SKIP_AUTO_TRIGGER=true` so the UI mirrors phone progress instead of starting a second sequence |
 
 Constants in `shared/.../WearPaths.kt`.
 
@@ -162,6 +176,8 @@ When SOS triggers (real or test), each side decides whether to play locally / pu
 
 On sequence end / cancel / stop, the orchestrator unconditionally sends `SirenCommand(start=false)` to the peer (no-op if peer wasn't playing) and stops its own siren.
 
+**Volume ramp-up.** The main siren (started at the beginning of `Countdown`) ramps linearly from **20 % → 100 %** of `sirenVolume` over **8 s**, then holds. Implemented in `Siren.feed()` by calling `AudioTrack.setVolume()` every ~100 ms during the ramp window. The same ramp applies on the peer device — `SirenCommand.rampSeconds` is set by the orchestrator and honored by the listener service. The minute-pulse burst is **not** ramped (sudden 2 s burst at full `sirenVolume`).
+
 If `loudMinutePulse` is on, a parallel `Siren.burst()` plays the same waveform for 2 s every 60 s while the sequence runs, on top of the in-call audio when applicable.
 
 ---
@@ -174,13 +190,18 @@ If `loudMinutePulse` is on, a parallel `Siren.burst()` plays the same waveform f
 
 **Detect answered** — `TelephonyCallback.CallStateListener` (API 31+) or `PhoneStateListener.onCallStateChanged` (≤30). Treat `CALL_STATE_OFFHOOK` after call placement as "answered". Hard ceiling = `perContactWaitSeconds * 1000 ms` (configurable).
 
-**End call** — programmatic `endCall` ducked in MVP (the next `ACTION_CALL` displaces the previous). Documented limitation.
+**End call** — `TelecomManager.endCall()` (API 28+) gated by the new `ANSWER_PHONE_CALLS` permission. Used only by the voicemail-trap-escape SKIP path (after the call is in `CALL_STATE_OFFHOOK`). On API ≤27 the SKIP path silently no-ops (next contact won't be dialed because the previous call holds the audio path) — devices that old are not realistic targets here.
+
+**Voicemail trap escape skip pathway**:
+- WATCH_SELF route: orchestrator's `localAwaitCallEndOrSkip()` polls `skipFlag` and `CALL_STATE_IDLE`. SKIP button on watch sets the flag, telephony ends the call, loop `continue`s to next eligible contact.
+- PHONE route: SKIP on watch → `RemoteSosBridge.pushSkip()` → `SOS_SKIP` message → phone `WearListenerService` → `PhoneSosHandler.requestSkip()` → same flag/loop on the phone side.
+- Skip is suppressed on the last eligible contact: there is nothing to escalate to.
 
 ---
 
 ## Permissions (declared in both manifests)
 
-Unchanged from MVP: `SEND_SMS`, `CALL_PHONE`, `READ_PHONE_STATE`, `ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION`, `VIBRATE`, `WAKE_LOCK`, `POST_NOTIFICATIONS`. Phone also has `INTERNET`.
+Both manifests: `SEND_SMS`, `CALL_PHONE`, `READ_PHONE_STATE`, **`ANSWER_PHONE_CALLS`** (new — needed by `TelecomManager.endCall` for the voicemail-trap-escape SKIP path), `ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION`, `VIBRATE`, `WAKE_LOCK`, `POST_NOTIFICATIONS`. Phone also has `INTERNET`.
 
 Watch only requests SMS/CALL/READ_PHONE_STATE at runtime when capability probe resolves WATCH_SELF.
 
@@ -192,8 +213,8 @@ Watch only requests SMS/CALL/READ_PHONE_STATE at runtime when capability probe r
 - Multi-part SMS.
 - Programmatic call hangup.
 - Foreground service.
-- Premium IAP / paywall.
-- Localized strings.
+- Premium IAP / paywall (price is set in the Play Store listing — not implemented in-app).
+- Localized strings on the watch module (phone module is localized; see below).
 - Adaptive icons.
 - Hilt DI.
 - Tests.
@@ -221,7 +242,10 @@ wear/src/main/java/com/savemebutton/wear/
                                     minute-pulse, configurable timings, triple-tap during Calling
   sos/RemoteSosBridge.kt          ✎ + pushSiren, pushStop
   sync/PhoneListenerService.kt    ✎ handles LOC_REPLY, SIREN, SOS_STOP
-  presentation/MainActivity.kt    ✎ Handler-based auto-trigger while held
+  presentation/MainActivity.kt    ✎ Handler-based auto-trigger while held; auto-trigger on
+                                    panic launch (cold start + onNewIntent); KEEP_SCREEN_ON
+                                    only during active SOS states; setTurnScreenOn /
+                                    setShowWhenLocked replace deprecated window flags
   presentation/SosViewModel.kt    ✎ stop(), config getters, configurable cancelTaps
   presentation/SosUI.kt           ✎ red bold SAVE ME, dynamic-text Idle and Countdown screens,
                                     Stopped state rendering
@@ -238,7 +262,18 @@ phone/src/main/java/com/savemebutton/phone/
   sync/WatchSyncBridge.kt         ✎ + pushSiren
   presentation/MainActivity.kt    (unchanged)
   presentation/MainViewModel.kt   ✎ draft/saved model, SAVE, TEST, all setters
-  presentation/MainUI.kt          ✎ SAVE ME header in red, Save+Test buttons, sliders,
-                                    sound dropdown + volume + minute-pulse toggle
+  presentation/MainUI.kt          ✎ All UI strings now via `stringResource(R.string.*)`;
+                                    TEST button opens an `AlertDialog` (`test_dialog_*`);
+                                    voicemail-trap-escape toggle row.
   presentation/Theme.kt           (unchanged)
+  res/values/strings.xml          ⊕ source-of-truth English strings.
+  res/values-{de,es,fr,ja,ko,ro,zh}/strings.xml  ⊕ localized strings (locale set mirrored from Crown Button).
 ```
+
+---
+
+## Localization
+
+Phone module is localized for **en (default), de, es, fr, ja, ko, ro, zh** — the same set Crown Button supports. App name (`Save Me Button`) is kept in Latin script across all locales; the in-UI red title (`app_title`) is translated for emotional impact (e.g. `HILFE`, `AYUDA`, `AU SECOURS`, `助けて`, `도와주세요`, `AJUTOR`, `救命`). All other UI strings, including the TEST confirmation dialog and the voicemail-trap-escape labels, are translated.
+
+The watch module is intentionally not localized (deferred — its UI is a few short status lines).

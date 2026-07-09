@@ -52,10 +52,16 @@ import com.savemebutton.shared.SirenSound
 import com.savemebutton.shared.SirenTarget
 
 @Composable
-fun MainScreen(viewModel: MainViewModel) {
+fun MainScreen(
+    viewModel: MainViewModel,
+    onUnlockPremium: () -> Unit = {},
+    onRestorePurchases: () -> Unit = {},
+) {
     val draft by viewModel.draft.collectAsStateWithLifecycle()
     val dirty by viewModel.dirty.collectAsStateWithLifecycle()
     val testDialogShown by viewModel.testDialogShown.collectAsStateWithLifecycle()
+    val premium by viewModel.premium.collectAsStateWithLifecycle()
+    val priceText by viewModel.priceText.collectAsStateWithLifecycle()
     val secondsSuffix = stringResource(R.string.suffix_seconds)
     Surface(modifier = Modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.background) {
         Column(
@@ -108,15 +114,36 @@ fun MainScreen(viewModel: MainViewModel) {
 
             Spacer(Modifier.height(8.dp))
             Text(stringResource(R.string.section_default_sms), style = MaterialTheme.typography.titleMedium)
+            // Cosmetic premium gate: free users keep the DEFAULT message (fully
+            // functional). Premium/trial unlocks editing to a custom text. The
+            // SOS sending path is never gated.
+            val smsEditable = premium.hasFullAccess
             OutlinedTextField(
-                value = draft.smsBody,
+                value = if (smsEditable) draft.smsBody else viewModel.defaultSmsBody,
                 onValueChange = viewModel::updateSmsBody,
                 label = { Text(stringResource(R.string.label_message)) },
+                readOnly = !smsEditable,
+                enabled = smsEditable,
                 modifier = Modifier.fillMaxWidth(),
             )
             Text(
                 stringResource(R.string.hint_coords_appended),
                 style = MaterialTheme.typography.bodySmall,
+            )
+            if (!smsEditable) {
+                Text(
+                    stringResource(R.string.premium_sms_locked_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color(0xFFFF1744),
+                )
+            }
+
+            Spacer(Modifier.height(8.dp))
+            PremiumSection(
+                premium = premium,
+                priceText = priceText,
+                onUnlock = onUnlockPremium,
+                onRestore = onRestorePurchases,
             )
 
             Spacer(Modifier.height(8.dp))
@@ -211,6 +238,66 @@ fun MainScreen(viewModel: MainViewModel) {
                 }
             },
         )
+    }
+}
+
+@Composable
+private fun PremiumSection(
+    premium: PremiumUiState,
+    priceText: String,
+    onUnlock: () -> Unit,
+    onRestore: () -> Unit,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(stringResource(R.string.premium_section_title), style = MaterialTheme.typography.titleMedium)
+            val statusLine = when {
+                premium.isPremium -> stringResource(R.string.premium_status_active)
+                else -> {
+                    val hours = (premium.trialRemainingMs / (1000L * 60 * 60)).toInt()
+                    val minutes = ((premium.trialRemainingMs % (1000L * 60 * 60)) / (1000L * 60)).toInt()
+                    if (premium.hasFullAccess) {
+                        stringResource(R.string.premium_status_trial, hours, minutes)
+                    } else {
+                        stringResource(R.string.premium_status_expired)
+                    }
+                }
+            }
+            Text(
+                statusLine,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold,
+                color = if (premium.hasFullAccess) Color(0xFF2E7D32) else Color(0xFFFF1744),
+            )
+            Text(
+                stringResource(R.string.premium_explainer),
+                style = MaterialTheme.typography.bodySmall,
+            )
+            if (!premium.isPremium) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Button(
+                        onClick = onUnlock,
+                        modifier = Modifier.weight(1f),
+                    ) { Text(stringResource(R.string.premium_unlock, priceText)) }
+                    OutlinedButton(
+                        onClick = onRestore,
+                        modifier = Modifier.weight(1f),
+                    ) { Text(stringResource(R.string.premium_restore)) }
+                }
+            }
+        }
     }
 }
 

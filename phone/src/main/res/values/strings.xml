@@ -38,4 +38,12 @@
     <string name="test_dialog_message">Test application from the watch too. It is recommended to have a watch with an active number otherwise keep the phone connected and in proximity.</string>
     <string name="test_dialog_confirm">START TEST</string>
     <string name="test_dialog_cancel">CANCEL</string>
+    <string name="premium_section_title">Premium (optional)</string>
+    <string name="premium_explainer">All safety features (panic trigger, SMS and calls to your contacts) are free forever. Premium only unlocks editing the custom SMS message.</string>
+    <string name="premium_sms_locked_hint">Editing the message is a Premium extra. Free users send the default message, which works fully.</string>
+    <string name="premium_status_active">Status: PREMIUM</string>
+    <string name="premium_status_trial">Free trial: %1$d h %2$d m left</string>
+    <string name="premium_status_expired">Free trial ended (safety features still free)</string>
+    <string name="premium_unlock">Unlock · %1$s</string>
+    <string name="premium_restore">Restore</string>
 </resources>
