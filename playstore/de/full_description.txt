@@ -1,0 +1,26 @@
+Save Me Button macht deine Wear OS Uhr zum persönlichen Notfallknopf. Wenn du Hilfe brauchst, hältst du einfach die physische Taste der Uhr gedrückt, um eine Notfallsequenz zu starten - direkt vom Handgelenk.
+
+SO FUNKTIONIERT ES
+Halte die Taste gedrückt, und Save Me Button:
+- Sendet eine SMS mit deinem Standort - GPS-Koordinaten plus Kartenlink - an deine Notfallkontakte
+- Ruft bis zu 3 Kontakte nacheinander an
+- Wiederholt die Anrufe, bis jemand abnimmt
+
+Hat deine Uhr eine eigene Mobilfunkverbindung, läuft alles direkt auf der Uhr. Andernfalls läuft es über die Begleit-App auf dem Handy. So oder so ist Hilfe nur einen Tastendruck entfernt.
+
+SCHNELL ABBRECHEN
+Aus Versehen ausgelöst? Brich die ganze Sequenz mit wenigen Tipps ab.
+
+DER ALARM IST IMMER KOSTENLOS
+Die SOS-Notfallfunktion ist für immer kostenlos und wird nie hinter einer Bezahlschranke gesperrt. Das Senden der SMS, das Anrufen deiner Kontakte und die automatische Wiederholung funktionieren immer gratis. Deine Sicherheit ist keine Premium-Funktion.
+
+OPTIONALE FREISCHALTUNG
+Ein einmaliger Kauf von 2,99 EUR schaltet nur eine Bequemlichkeit frei: das Bearbeiten des individuellen Textes deiner Notfall-SMS. Alles Sicherheitsrelevante bleibt kostenlos - diese Freischaltung ist rein optional.
+
+BEGLEIT-APP FÜRS HANDY
+Richte deine Kontakte und deine Nachricht in der Begleit-App auf dem Handy ein und lass die Uhr den Rest erledigen.
+
+WARUM SAVE ME BUTTON
+Es ist ein SOS über die Uhrentaste, das automatisch von SMS zu Anrufen eskaliert und weiterversucht, bis jemand abnimmt - und der Alarm bleibt immer kostenlos.
+
+Füge Save Me Button hinzu und trage ein Sicherheitsnetz am Handgelenk.

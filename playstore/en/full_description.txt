@@ -1,0 +1,26 @@
+Save Me Button turns your Wear OS watch into a personal emergency button. When you need help, just hold the watch's physical button to start an emergency sequence - right from your wrist.
+
+HOW IT WORKS
+Hold the button and Save Me Button will:
+- Send an SMS with your location - GPS coordinates plus a map link - to your emergency contacts
+- Call up to 3 contacts, one after another
+- Keep repeating until someone answers
+
+If your watch has its own cellular connection, everything runs directly from the watch. Otherwise it works through the companion phone app. Either way, help is one button-hold away.
+
+QUICK CANCEL
+Triggered it by accident? Cancel the whole sequence with just a few taps.
+
+THE ALARM IS ALWAYS FREE
+The SOS emergency function is free forever and is never locked behind a paywall. Sending the SMS, calling your contacts and the auto-repeat escalation will always work at no cost. Your safety is not a premium feature.
+
+OPTIONAL UNLOCK
+A single one-time purchase of EUR 2.99 unlocks just one convenience: editing the custom text of your emergency SMS message. Everything safety-related stays free - this unlock is purely optional.
+
+PHONE COMPANION
+Set up your contacts and message on the companion phone app, then let the watch do the rest.
+
+WHY SAVE ME BUTTON
+It is a watch-button SOS that automatically escalates from SMS to calls and keeps trying until someone answers - and the alarm always stays free.
+
+Add Save Me Button and carry a safety net on your wrist.

@@ -1,0 +1,1 @@
+SOS button for Wear OS: SMS with location + calls to contacts. Alarm is free.

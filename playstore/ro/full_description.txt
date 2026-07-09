@@ -1,0 +1,26 @@
+Save Me Button transformă ceasul tău Wear OS într-un buton personal de urgență. Când ai nevoie de ajutor, ții apăsat butonul fizic al ceasului ca să pornești o secvență de urgență - direct de pe încheietură.
+
+CUM FUNCȚIONEAZĂ
+Ții apăsat butonul, iar Save Me Button:
+- Trimite un SMS cu locația ta - coordonate GPS plus un link către hartă - contactelor tale de urgență
+- Sună până la 3 contacte, unul după altul
+- Repetă apelurile până când răspunde cineva
+
+Dacă ceasul are conexiune celulară proprie, totul rulează direct de pe ceas. Altfel, funcționează prin aplicația companion de pe telefon. Oricum, ajutorul este la o apăsare de buton distanță.
+
+ANULARE RAPIDĂ
+Ai pornit-o din greșeală? Anulezi întreaga secvență din câteva atingeri.
+
+ALARMA ESTE MEREU GRATUITĂ
+Funcția SOS de urgență este gratuită pentru totdeauna și nu este niciodată blocată în spatele unei plăți. Trimiterea SMS-ului, apelarea contactelor și repetarea automată vor funcționa mereu gratuit. Siguranța ta nu este o funcție premium.
+
+DEBLOCARE OPȚIONALĂ
+O singură achiziție unică de 2,99 EUR deblochează un singur lucru de confort: editarea textului personalizat al SMS-ului de urgență. Tot ce ține de siguranță rămâne gratuit - această deblocare este pur opțională.
+
+APLICAȚIE COMPANION PE TELEFON
+Îți configurezi contactele și mesajul în aplicația companion de pe telefon, apoi lași ceasul să facă restul.
+
+DE CE SAVE ME BUTTON
+Este un SOS acționat de butonul ceasului, care escaladează automat de la SMS la apeluri și încearcă până răspunde cineva - iar alarma rămâne mereu gratuită.
+
+Adaugă Save Me Button și poartă o plasă de siguranță pe încheietură.
