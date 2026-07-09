@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- outer bezel ring (red) -->
+    <path android:fillColor="#DC2626"
+        android:pathData="M54,16c21,0 38,17 38,38S75,92 54,92 16,75 16,54 33,16 54,16z"/>
+    <!-- inner watch face -->
+    <path android:fillColor="#0B1220"
+        android:pathData="M54,24c16.6,0 30,13.4 30,30S70.6,84 54,84 24,70.6 24,54 37.4,24 54,24z"/>
+    <!-- bezel highlight ring (pale red) -->
+    <path android:fillColor="#FCA5A5"
+        android:pathData="M54,30c13.3,0 24,10.7 24,24 0,13.3 -10.7,24 -24,24 -13.3,0 -24,-10.7 -24,-24 0,-13.3 10.7,-24 24,-24zm0,4c-11,0 -20,9 -20,20s9,20 20,20 20,-9 20,-20 -9,-20 -20,-20z"/>
+    <!-- right-side crown stem (red palette) -->
+    <path android:fillColor="#FFFFFF"
+        android:pathData="M78,46h6v17h-6z"/>
+    <path android:fillColor="#EF4444"
+        android:pathData="M86,52h4v6h-4z"/>
+    <path android:fillColor="#FCA5A5"
+        android:pathData="M75,38h5v9h-5z"/>
+    <!-- panic-button red disc (cap) -->
+    <path android:fillColor="#EF4444"
+        android:pathData="M54,32a22,22 0 1,0 0.0001,0z"/>
+    <!-- top highlight on disc -->
+    <path android:fillColor="#FCA5A5" android:fillAlpha="0.55"
+        android:pathData="M54,42m-15,-3a15,3 0 1,0 30,0a15,3 0 1,0 -30,0z"/>
+    <!-- SOS letterforms (drawn as paths, condensed sans bold) -->
+    <!-- S (left) -->
+    <path android:fillColor="#FFFFFF"
+        android:pathData="M40,48h6v2h-4v3h4v6h-6v-2h4v-3h-4z"/>
+    <!-- O (center) -->
+    <path android:fillColor="#FFFFFF"
+        android:pathData="M48,48h6v11h-6zm2,2v7h2v-7z"/>
+    <!-- S (right) -->
+    <path android:fillColor="#FFFFFF"
+        android:pathData="M56,48h6v2h-4v3h4v6h-6v-2h4v-3h-4z"/>
+    <!-- medical cross (top-left of face) -->
+    <path android:fillColor="#FFFFFF"
+        android:pathData="M33,36h6v2h-6zm2,-2h2v6h-2z"/>
+</vector>

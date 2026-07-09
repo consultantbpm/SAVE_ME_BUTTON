@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
+import android.telecom.TelecomManager
 import android.telephony.PhoneStateListener
 import android.telephony.SmsManager
 import android.telephony.TelephonyCallback
@@ -60,6 +61,71 @@ class WatchTelephony(private val context: Context) {
             Log.d(TAG, "call failed: $it")
             false
         }
+    }
+
+    /**
+     * After a call is answered, suspend until the call goes idle or `skipFlag` flips.
+     * Returns true if skip was requested.
+     */
+    suspend fun awaitCallEndOrSkip(skipFlag: AtomicBoolean): Boolean {
+        if (!hasPermission(Manifest.permission.READ_PHONE_STATE)) {
+            while (!skipFlag.get()) delay(200)
+            return true
+        }
+        val tm = context.getSystemService(TelephonyManager::class.java) ?: run {
+            while (!skipFlag.get()) delay(200)
+            return true
+        }
+        val ended = AtomicBoolean(false)
+        val callback: Any
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val cb = object : TelephonyCallback(), TelephonyCallback.CallStateListener {
+                override fun onCallStateChanged(state: Int) {
+                    if (state == TelephonyManager.CALL_STATE_IDLE) ended.set(true)
+                }
+            }
+            tm.registerTelephonyCallback(context.mainExecutor, cb)
+            callback = cb
+        } else {
+            @Suppress("DEPRECATION")
+            val cb = object : PhoneStateListener() {
+                @Suppress("DEPRECATION")
+                override fun onCallStateChanged(state: Int, phoneNumber: String?) {
+                    if (state == TelephonyManager.CALL_STATE_IDLE) ended.set(true)
+                }
+            }
+            @Suppress("DEPRECATION")
+            tm.listen(cb, PhoneStateListener.LISTEN_CALL_STATE)
+            callback = cb
+        }
+        try {
+            delay(400)
+            ended.set(false)
+            while (!skipFlag.get() && !ended.get()) delay(200)
+        } finally {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                tm.unregisterTelephonyCallback(callback as TelephonyCallback)
+            } else {
+                @Suppress("DEPRECATION")
+                tm.listen(callback as PhoneStateListener, PhoneStateListener.LISTEN_NONE)
+            }
+        }
+        return skipFlag.get()
+    }
+
+    fun endCall(): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return false
+        if (!hasPermission(Manifest.permission.ANSWER_PHONE_CALLS)) {
+            Log.d(TAG, "endCall: no ANSWER_PHONE_CALLS permission")
+            return false
+        }
+        val tc = context.getSystemService(TelecomManager::class.java) ?: return false
+        return runCatching {
+            @SuppressLint("MissingPermission")
+            val ok = tc.endCall()
+            Log.d(TAG, "endCall ok=$ok")
+            ok
+        }.getOrElse { Log.d(TAG, "endCall failed: $it"); false }
     }
 
     /** Returns true if offhook was observed within `timeoutMs`, false on timeout. */

@@ -48,6 +48,18 @@ class RemoteSosBridge(private val context: Context) {
         }
     }
 
+    suspend fun pushSkip() = withContext(Dispatchers.IO) {
+        val nodes = runCatching {
+            Tasks.await(Wearable.getNodeClient(context).connectedNodes)
+        }.getOrElse { return@withContext }
+        val msgClient = Wearable.getMessageClient(context)
+        for (node in nodes) {
+            runCatching {
+                Tasks.await(msgClient.sendMessage(node.id, WearPaths.SOS_SKIP, ByteArray(0)))
+            }.onFailure { Log.d(TAG, "skip push to ${node.id} failed: $it") }
+        }
+    }
+
     suspend fun pushStop() = withContext(Dispatchers.IO) {
         val nodes = runCatching {
             Tasks.await(Wearable.getNodeClient(context).connectedNodes)

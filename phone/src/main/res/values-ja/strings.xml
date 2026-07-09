@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Save Me Button</string>
+    <string name="app_title">助けて</string>
+    <string name="header_description">3 件の緊急連絡先と起動動作を設定します。テストは実際に SMS を送信し、通話を発信します。</string>
+    <string name="action_save">保存</string>
+    <string name="action_test">テスト</string>
+    <string name="section_contacts">連絡先</string>
+    <string name="section_default_sms">既定の SMS 本文</string>
+    <string name="label_message">メッセージ</string>
+    <string name="hint_coords_appended">座標は自動的に追加されます。</string>
+    <string name="section_settings">設定</string>
+    <string name="setting_cancel_taps">キャンセルのタップ回数</string>
+    <string name="setting_countdown">カウントダウン</string>
+    <string name="setting_per_contact_wait">連絡先ごとの待機</string>
+    <string name="section_alert_sound">アラート音</string>
+    <string name="setting_alert_sound_enabled">アラート音を有効化</string>
+    <string name="label_play_on">再生先</string>
+    <string name="siren_target_off">オフ</string>
+    <string name="siren_target_watch">ウォッチ</string>
+    <string name="siren_target_phone">スマホ</string>
+    <string name="siren_target_both">両方</string>
+    <string name="siren_sound_two_tone">ツートン</string>
+    <string name="siren_sound_klaxon">クラクション</string>
+    <string name="siren_sound_whoop">Whoop</string>
+    <string name="siren_sound_pulse">パルス</string>
+    <string name="label_sound">音</string>
+    <string name="action_preview">プレビュー</string>
+    <string name="label_volume">音量: %1$d%%</string>
+    <string name="setting_loud_minute_pulse">停止するまで毎分大音量パルス</string>
+    <string name="contact_label">連絡先 %1$d</string>
+    <string name="label_name">名前</string>
+    <string name="label_phone_e164">電話番号 (E.164)</string>
+    <string name="suffix_seconds">秒</string>
+    <string name="setting_voicemail_trap_escape">留守電トラップ回避</string>
+    <string name="setting_voicemail_trap_escape_help">応答が留守電の場合、ウォッチの SKIP をタップして切断し、次の連絡先に発信します。</string>
+    <string name="test_dialog_title">実際の SOS テストを実行しますか？</string>
+    <string name="test_dialog_message">ウォッチからもアプリをテストしてください。アクティブな番号を持つウォッチを推奨します。そうでない場合は、スマホを接続したまま近くに置いてください。</string>
+    <string name="test_dialog_confirm">テスト開始</string>
+    <string name="test_dialog_cancel">キャンセル</string>
+</resources>

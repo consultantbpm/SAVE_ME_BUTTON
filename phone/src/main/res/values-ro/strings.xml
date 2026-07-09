@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Save Me Button</string>
+    <string name="app_title">AJUTOR</string>
+    <string name="header_description">Configurează 3 contacte de urgență și comportamentul declanșatorului. TEST trimite un SMS real și efectuează un apel real.</string>
+    <string name="action_save">SALVEAZĂ</string>
+    <string name="action_test">TEST</string>
+    <string name="section_contacts">Contacte</string>
+    <string name="section_default_sms">Text SMS implicit</string>
+    <string name="label_message">Mesaj</string>
+    <string name="hint_coords_appended">Coordonatele sunt adăugate automat.</string>
+    <string name="section_settings">Setări</string>
+    <string name="setting_cancel_taps">Atingeri pentru anulare</string>
+    <string name="setting_countdown">Numărătoare inversă</string>
+    <string name="setting_per_contact_wait">Așteptare per contact</string>
+    <string name="section_alert_sound">Sunet alertă</string>
+    <string name="setting_alert_sound_enabled">Sunet de alertă activat</string>
+    <string name="label_play_on">Redă pe</string>
+    <string name="siren_target_off">Oprit</string>
+    <string name="siren_target_watch">Ceas</string>
+    <string name="siren_target_phone">Telefon</string>
+    <string name="siren_target_both">Ambele</string>
+    <string name="siren_sound_two_tone">Două tonuri</string>
+    <string name="siren_sound_klaxon">Klaxon</string>
+    <string name="siren_sound_whoop">Whoop</string>
+    <string name="siren_sound_pulse">Puls</string>
+    <string name="label_sound">Sunet</string>
+    <string name="action_preview">PREVIZUALIZEAZĂ</string>
+    <string name="label_volume">Volum: %1$d%%</string>
+    <string name="setting_loud_minute_pulse">Impuls puternic în fiecare minut până la salvare</string>
+    <string name="contact_label">Contact %1$d</string>
+    <string name="label_name">Nume</string>
+    <string name="label_phone_e164">Telefon (E.164)</string>
+    <string name="suffix_seconds">s</string>
+    <string name="setting_voicemail_trap_escape">Evadare capcană mesagerie</string>
+    <string name="setting_voicemail_trap_escape_help">Dacă apelul preluat este mesageria vocală, atinge SKIP pe ceas pentru a închide și a apela următorul contact.</string>
+    <string name="test_dialog_title">Pornești un test SOS real?</string>
+    <string name="test_dialog_message">Testează aplicația și de pe ceas. Se recomandă un ceas cu număr activ; altfel, ține telefonul conectat și aproape.</string>
+    <string name="test_dialog_confirm">PORNEȘTE TESTUL</string>
+    <string name="test_dialog_cancel">ANULEAZĂ</string>
+</resources>

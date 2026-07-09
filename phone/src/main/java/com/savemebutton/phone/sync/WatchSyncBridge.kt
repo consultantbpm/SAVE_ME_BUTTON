@@ -49,6 +49,19 @@ class WatchSyncBridge(private val context: Context) {
         }
     }
 
+    fun pushOpenWatch() {
+        scope.launch {
+            runCatching {
+                val nodes = Tasks.await(Wearable.getNodeClient(context).connectedNodes)
+                val msgClient = Wearable.getMessageClient(context)
+                for (node in nodes) {
+                    Tasks.await(msgClient.sendMessage(node.id, WearPaths.OPEN_WATCH_UI, byteArrayOf()))
+                }
+                Log.d(TAG, "open-watch-ui pushed")
+            }.onFailure { Log.d(TAG, "pushOpenWatch failed: $it") }
+        }
+    }
+
     suspend fun pushSiren(command: SirenCommand) {
         runCatching {
             val nodes = Tasks.await(Wearable.getNodeClient(context).connectedNodes)

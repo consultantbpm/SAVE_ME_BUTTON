@@ -20,6 +20,7 @@ class WearListenerService : WearableListenerService() {
             WearPaths.LOC_REQUEST -> app.locationResponder.respond()
             WearPaths.SIREN -> handleSiren(event.data)
             WearPaths.SOS_STOP -> app.sosHandler.stop()
+            WearPaths.SOS_SKIP -> app.sosHandler.requestSkip()
             else -> Log.d(TAG, "ignored message ${event.path}")
         }
     }
@@ -39,6 +40,6 @@ class WearListenerService : WearableListenerService() {
             SaveMeJson.decodeFromString(SirenCommand.serializer(), String(bytes))
         }.getOrNull() ?: return
         val app = application as PhoneApplication
-        if (cmd.start) app.siren.start(cmd.sound, cmd.volume) else app.siren.stop()
+        if (cmd.start) app.siren.start(cmd.sound, cmd.volume, cmd.rampSeconds) else app.siren.stop()
     }
 }

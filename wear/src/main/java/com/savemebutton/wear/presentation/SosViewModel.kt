@@ -24,6 +24,10 @@ class SosViewModel(app: WearApplication) : AndroidViewModel(app) {
 
     fun stop() = orchestrator.stop()
 
+    fun requestSkip() = orchestrator.requestSkip()
+
+    fun voicemailTrapEscapeEnabled(): Boolean = configFlow.value.voicemailTrapEscape
+
     fun configHoldSeconds(): Int = configFlow.value.holdSeconds
     fun configCountdownSeconds(): Int = configFlow.value.countdownSeconds
     fun configCancelTaps(): Int = configFlow.value.cancelTaps

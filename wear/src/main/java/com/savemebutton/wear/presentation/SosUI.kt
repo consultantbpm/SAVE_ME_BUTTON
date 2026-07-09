@@ -5,7 +5,10 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -18,6 +21,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.wear.compose.material.Button
+import androidx.wear.compose.material.ButtonDefaults
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Text
 import com.savemebutton.shared.SosState
@@ -44,7 +49,11 @@ fun SosScreen(viewModel: SosViewModel, onTap: () -> Unit) {
             is SosState.AcquiringLocation -> CenterText("Locating…")
             is SosState.SendingSms -> CenterText("SMS → ${s.contactName}")
             is SosState.Calling -> CenterText("Calling ${s.contactName}")
-            is SosState.CallActive -> CenterText("Connected", color = Color(0xFF4CAF50))
+            is SosState.CallActive -> CallActiveView(
+                contactName = s.contactName,
+                showSkip = viewModel.voicemailTrapEscapeEnabled(),
+                onSkip = { viewModel.requestSkip() },
+            )
             is SosState.Stopped -> CenterText("Stopped", color = Color(0xFFFFB300))
             is SosState.Done -> DoneView(s)
         }
@@ -118,6 +127,43 @@ private fun CenterText(text: String, color: Color = Color.White) {
         textAlign = TextAlign.Center,
         modifier = Modifier.padding(12.dp),
     )
+}
+
+@Composable
+private fun CallActiveView(contactName: String, showSkip: Boolean, onSkip: () -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Text(
+            text = "Connected",
+            color = Color(0xFF4CAF50),
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+        )
+        Text(
+            text = contactName,
+            color = Color.White,
+            fontSize = 14.sp,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(top = 4.dp),
+        )
+        if (showSkip) {
+            Spacer(Modifier.height(12.dp))
+            Button(
+                onClick = onSkip,
+                colors = ButtonDefaults.primaryButtonColors(
+                    backgroundColor = Color(0xFFFF1744),
+                    contentColor = Color.White,
+                ),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text("SKIP", fontSize = 18.sp, fontWeight = FontWeight.Black)
+            }
+        }
+    }
 }
 
 @Composable

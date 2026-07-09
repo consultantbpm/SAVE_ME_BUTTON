@@ -19,11 +19,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.concurrent.atomic.AtomicBoolean
 
 private const val TAG = "SmbSos"
 private const val CANCELED_HOLD_MS = 1500L
 private const val MINUTE_PULSE_MS = 60_000L
 private const val PULSE_BURST_MS = 2_000L
+private const val SIREN_RAMP_SECONDS = 8f
 
 class PhoneSosHandler(
     private val scope: CoroutineScope,
@@ -34,18 +36,25 @@ class PhoneSosHandler(
 ) {
     private var sequenceJob: Job? = null
     private var pulseJob: Job? = null
+    private val skipFlag = AtomicBoolean(false)
 
     private val _localState = MutableStateFlow<SosState>(SosState.Idle)
     val localState: StateFlow<SosState> = _localState
+
+    fun requestSkip() {
+        Log.d(TAG, "skip requested")
+        skipFlag.set(true)
+    }
 
     fun handleTrigger(payload: SosTriggerPayload) {
         Log.d(TAG, "phone handling SOS trigger from watch")
         runSequence(payload.config, payload.watchCoords, fromWatch = true)
     }
 
-    /** Used by the phone Test button. Runs the same sequence locally. */
+    /** Used by the phone Test button. Runs the same sequence locally and wakes the watch UI so the user can monitor / cancel from the wrist. */
     fun triggerLocal(config: SosConfig) {
         Log.d(TAG, "phone test trigger")
+        watchBridge.pushOpenWatch()
         runSequence(config, null, fromWatch = false)
     }
 
@@ -65,10 +74,14 @@ class PhoneSosHandler(
     private fun runSequence(config: SosConfig, presetCoords: SosCoords?, fromWatch: Boolean) {
         sequenceJob?.cancel()
         sequenceJob = scope.launch {
-            val playLocal = config.sirenTarget == SirenTarget.PHONE || config.sirenTarget == SirenTarget.BOTH
-            val playRemote = config.sirenTarget == SirenTarget.WATCH || config.sirenTarget == SirenTarget.BOTH
-            if (playLocal) siren.start(config.sirenSound, config.sirenVolume)
-            if (playRemote) runCatching { watchBridge.pushSiren(SirenCommand(true, config.sirenSound, config.sirenVolume)) }
+            val playLocal = config.sirenEnabled &&
+                (config.sirenTarget == SirenTarget.PHONE || config.sirenTarget == SirenTarget.BOTH)
+            val playRemote = config.sirenEnabled &&
+                (config.sirenTarget == SirenTarget.WATCH || config.sirenTarget == SirenTarget.BOTH)
+            if (playLocal) siren.start(config.sirenSound, config.sirenVolume, SIREN_RAMP_SECONDS)
+            if (playRemote) runCatching {
+                watchBridge.pushSiren(SirenCommand(true, config.sirenSound, config.sirenVolume, SIREN_RAMP_SECONDS))
+            }
             try {
                 if (!fromWatch) {
                     if (!runCountdown(config.countdownSeconds)) {
@@ -117,17 +130,19 @@ class PhoneSosHandler(
     }
 
     private suspend fun executeSequence(config: SosConfig, coords: SosCoords?) {
-        val coordsLine = coords?.mapsUrl() ?: "(location unavailable)"
+        val coordsLine = coords?.smsLine() ?: "(location unavailable)"
         val body = "${config.smsBody} $coordsLine"
         val smsSent = BooleanArray(config.contacts.size)
+        val eligibleIndices = config.contacts
+            .mapIndexedNotNull { i, c -> if (c.number.isNotBlank()) i else null }
         var reachedIndex = -1
         var answered = false
         var cycle = 0
+        skipFlag.set(false)
         outer@ while (true) {
-            var anyEligible = false
-            for ((idx, contact) in config.contacts.withIndex()) {
-                if (contact.number.isBlank()) continue
-                anyEligible = true
+            if (eligibleIndices.isEmpty()) break
+            for (idx in eligibleIndices) {
+                val contact = config.contacts[idx]
                 reachedIndex = idx
                 val needSms = !smsSent[idx]
                 if (needSms) {
@@ -147,10 +162,20 @@ class PhoneSosHandler(
                 if (ok) {
                     answered = true
                     push(SosState.CallActive(idx, contact.name.ifBlank { contact.number }))
+                    val isLast = idx == eligibleIndices.last()
+                    if (config.voicemailTrapEscape && !isLast) {
+                        skipFlag.set(false)
+                        val skipped = telephony.awaitCallEndOrSkip(skipFlag)
+                        if (skipped) {
+                            telephony.endCall()
+                            answered = false
+                            delay(800)
+                            continue
+                        }
+                    }
                     break@outer
                 }
             }
-            if (!anyEligible) break
             cycle++
         }
         push(SosState.Done(reachedIndex = reachedIndex, answered = answered))

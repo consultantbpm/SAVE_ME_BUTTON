@@ -7,16 +7,21 @@ import com.savemebutton.shared.Contact
 import com.savemebutton.shared.SirenSound
 import com.savemebutton.shared.SirenTarget
 import com.savemebutton.shared.SosConfig
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 class MainViewModel(app: PhoneApplication) : AndroidViewModel(app) {
 
     private val repo = app.configRepository
     private val watchBridge = app.watchSyncBridge
     private val sosHandler = app.sosHandler
+    private val siren = app.siren
+    private var previewJob: Job? = null
 
     val saved: StateFlow<SosConfig> = repo.config
         .stateIn(viewModelScope, SharingStarted.Eagerly, repo.config.value)
@@ -46,10 +51,19 @@ class MainViewModel(app: PhoneApplication) : AndroidViewModel(app) {
     fun setCancelTaps(value: Int) { _draft.value = _draft.value.copy(cancelTaps = value) }
     fun setCountdownSeconds(value: Int) { _draft.value = _draft.value.copy(countdownSeconds = value) }
     fun setPerContactWaitSeconds(value: Int) { _draft.value = _draft.value.copy(perContactWaitSeconds = value) }
+    fun setSirenEnabled(value: Boolean) { _draft.value = _draft.value.copy(sirenEnabled = value) }
     fun setSirenTarget(value: SirenTarget) { _draft.value = _draft.value.copy(sirenTarget = value) }
     fun setSirenSound(value: SirenSound) { _draft.value = _draft.value.copy(sirenSound = value) }
     fun setSirenVolume(value: Float) { _draft.value = _draft.value.copy(sirenVolume = value) }
     fun setLoudMinutePulse(value: Boolean) { _draft.value = _draft.value.copy(loudMinutePulse = value) }
+    fun setVoicemailTrapEscape(value: Boolean) { _draft.value = _draft.value.copy(voicemailTrapEscape = value) }
+
+    private val _testDialogShown = MutableStateFlow(false)
+    val testDialogShown: StateFlow<Boolean> = _testDialogShown
+
+    /** TEST button now opens a confirmation dialog instead of running immediately. */
+    fun onTestClicked() { _testDialogShown.value = true }
+    fun dismissTestDialog() { _testDialogShown.value = false }
 
     /** Persists the draft and pushes it to the watch. Returns the saved config. */
     fun save(): SosConfig {
@@ -60,9 +74,22 @@ class MainViewModel(app: PhoneApplication) : AndroidViewModel(app) {
         return next
     }
 
-    /** Save then run real SOS on phone (real SMS, real call). */
+    /** Save then run real SOS on phone (real SMS, real call). Confirm dialog calls this. */
     fun runTest() {
+        _testDialogShown.value = false
         val cfg = save()
         sosHandler.triggerLocal(cfg)
+    }
+
+    /** Plays a 3-second sample of the currently selected siren sound at the draft volume. */
+    fun previewSiren() {
+        previewJob?.cancel()
+        siren.stop()
+        val d = _draft.value
+        siren.start(d.sirenSound, d.sirenVolume, rampSeconds = 0f)
+        previewJob = viewModelScope.launch {
+            delay(3000)
+            siren.stop()
+        }
     }
 }

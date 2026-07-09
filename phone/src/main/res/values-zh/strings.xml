@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Save Me Button</string>
+    <string name="app_title">救命</string>
+    <string name="header_description">配置 3 个紧急联系人和触发行为。测试会发送真实短信并拨打真实电话。</string>
+    <string name="action_save">保存</string>
+    <string name="action_test">测试</string>
+    <string name="section_contacts">联系人</string>
+    <string name="section_default_sms">默认短信内容</string>
+    <string name="label_message">消息</string>
+    <string name="hint_coords_appended">坐标会自动附加。</string>
+    <string name="section_settings">设置</string>
+    <string name="setting_cancel_taps">取消点按次数</string>
+    <string name="setting_countdown">倒计时</string>
+    <string name="setting_per_contact_wait">每个联系人等待</string>
+    <string name="section_alert_sound">警报声</string>
+    <string name="setting_alert_sound_enabled">启用警报声</string>
+    <string name="label_play_on">播放于</string>
+    <string name="siren_target_off">关闭</string>
+    <string name="siren_target_watch">手表</string>
+    <string name="siren_target_phone">手机</string>
+    <string name="siren_target_both">两者</string>
+    <string name="siren_sound_two_tone">双音</string>
+    <string name="siren_sound_klaxon">克拉克松</string>
+    <string name="siren_sound_whoop">Whoop</string>
+    <string name="siren_sound_pulse">脉冲</string>
+    <string name="label_sound">声音</string>
+    <string name="action_preview">预览</string>
+    <string name="label_volume">音量：%1$d%%</string>
+    <string name="setting_loud_minute_pulse">停止前每分钟一次响亮脉冲</string>
+    <string name="contact_label">联系人 %1$d</string>
+    <string name="label_name">姓名</string>
+    <string name="label_phone_e164">电话 (E.164)</string>
+    <string name="suffix_seconds">秒</string>
+    <string name="setting_voicemail_trap_escape">语音信箱陷阱跳出</string>
+    <string name="setting_voicemail_trap_escape_help">如果接通的是语音信箱，请在手表上点按 SKIP 挂断并拨打下一个联系人。</string>
+    <string name="test_dialog_title">运行真实的 SOS 测试？</string>
+    <string name="test_dialog_message">也从手表测试应用。建议使用带激活号码的手表；否则请保持手机已连接且在附近。</string>
+    <string name="test_dialog_confirm">开始测试</string>
+    <string name="test_dialog_cancel">取消</string>
+</resources>
