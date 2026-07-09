@@ -10,18 +10,24 @@ import android.os.Looper
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
+import android.provider.Settings
+import android.text.TextUtils
 import android.util.Log
 import android.view.KeyEvent
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.core.app.ActivityCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.savemebutton.shared.SosState
+import com.savemebutton.wear.PanicButtonBus
 import com.savemebutton.wear.WearApplication
 import kotlinx.coroutines.launch
 
@@ -31,7 +37,18 @@ class MainActivity : ComponentActivity() {
 
     companion object {
         const val EXTRA_SKIP_AUTO_TRIGGER = "smb_skip_auto_trigger"
+
+        /** Component id of our button-capture accessibility service. */
+        private const val A11Y_SERVICE_CLASS =
+            "com.savemebutton.wear.accessibility.SaveMeButtonAccessibilityService"
+
+        /** Guards the Samsung one-shot auto-open across the process lifetime. */
+        @Volatile
+        private var autoOpenedA11ySettings = false
     }
+
+    /** Reflects whether our button-capture a11y service is currently enabled. */
+    private var accessibilityEnabled by mutableStateOf(false)
 
 
     private val viewModel: SosViewModel by viewModels {
@@ -64,8 +81,22 @@ class MainActivity : ComponentActivity() {
         setContent {
             SosScreen(
                 viewModel = viewModel,
-                onTap = { viewModel.onScreenTap() }
+                onTap = { viewModel.onScreenTap() },
+                accessibilityEnabled = accessibilityEnabled,
+                onEnableAccessibility = { openAccessibilitySettings() },
             )
+        }
+
+        // Parallel capture path: the accessibility service captures the upper
+        // button hold (reliable on Samsung) and signals here. We call the SAME
+        // trigger the on-activity key handler uses. The orchestrator already
+        // ignores trigger() while a sequence is running (state != Idle), so
+        // there is no double-start even if both paths fire.
+        lifecycleScope.launch {
+            PanicButtonBus.events.collect {
+                Log.d(TAG, "panic hold completed via a11y service, firing trigger")
+                viewModel.trigger()
+            }
         }
 
         lifecycleScope.launch {
@@ -163,6 +194,46 @@ class MainActivity : ComponentActivity() {
 
     private fun stopVibration() {
         vibrator?.cancel()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        accessibilityEnabled = isAccessibilityEnabled()
+        // On Samsung the system swallows the buttons, so nudge the user to the
+        // accessibility settings once per process if the service isn't on yet.
+        if (!accessibilityEnabled && isSamsung() && !autoOpenedA11ySettings) {
+            autoOpenedA11ySettings = true
+            Log.d(TAG, "Samsung + a11y disabled → auto-opening accessibility settings")
+            openAccessibilitySettings()
+        }
+    }
+
+    private fun isSamsung(): Boolean =
+        Build.MANUFACTURER.equals("samsung", ignoreCase = true)
+
+    /**
+     * True when our button-capture accessibility service is enabled. Reads the
+     * system's list of enabled services and looks for
+     * "$packageName/$A11Y_SERVICE_CLASS".
+     */
+    private fun isAccessibilityEnabled(): Boolean {
+        val expected = "$packageName/$A11Y_SERVICE_CLASS"
+        val enabled = Settings.Secure.getString(
+            contentResolver,
+            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES,
+        ) ?: return false
+        val splitter = TextUtils.SimpleStringSplitter(':')
+        splitter.setString(enabled)
+        for (component in splitter) {
+            if (component.equals(expected, ignoreCase = true)) return true
+        }
+        return false
+    }
+
+    private fun openAccessibilitySettings() {
+        runCatching {
+            startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+        }.onFailure { Log.w(TAG, "could not open accessibility settings", it) }
     }
 
     override fun onPause() {

@@ -30,7 +30,12 @@ import com.savemebutton.shared.SosState
 private val SaveMeRed = Color(0xFFFF1744)
 
 @Composable
-fun SosScreen(viewModel: SosViewModel, onTap: () -> Unit) {
+fun SosScreen(
+    viewModel: SosViewModel,
+    onTap: () -> Unit,
+    accessibilityEnabled: Boolean = true,
+    onEnableAccessibility: () -> Unit = {},
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val bg = if (state is SosState.Countdown) Color(0xFFB00020) else Color.Black
     Box(
@@ -43,7 +48,11 @@ fun SosScreen(viewModel: SosViewModel, onTap: () -> Unit) {
         contentAlignment = Alignment.Center,
     ) {
         when (val s = state) {
-            is SosState.Idle -> IdleView(holdSeconds = viewModel.configHoldSeconds())
+            is SosState.Idle -> IdleView(
+                holdSeconds = viewModel.configHoldSeconds(),
+                accessibilityEnabled = accessibilityEnabled,
+                onEnableAccessibility = onEnableAccessibility,
+            )
             is SosState.Countdown -> CountdownView(s.secondsRemaining, viewModel.configCancelTaps())
             is SosState.Canceled -> CenterText("Canceled", color = Color(0xFF4CAF50))
             is SosState.AcquiringLocation -> CenterText("Locating…")
@@ -61,7 +70,11 @@ fun SosScreen(viewModel: SosViewModel, onTap: () -> Unit) {
 }
 
 @Composable
-private fun IdleView(holdSeconds: Int) {
+private fun IdleView(
+    holdSeconds: Int,
+    accessibilityEnabled: Boolean,
+    onEnableAccessibility: () -> Unit,
+) {
     Column(
         verticalArrangement = Arrangement.spacedBy(6.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -87,6 +100,31 @@ private fun IdleView(holdSeconds: Int) {
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(top = 8.dp),
                 )
+                Text(
+                    text = "Ține butonul apăsat ${holdSeconds}s pentru alarmă",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color(0xFFBDBDBD),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(top = 6.dp),
+                )
+                if (!accessibilityEnabled) {
+                    Spacer(Modifier.height(10.dp))
+                    Button(
+                        onClick = onEnableAccessibility,
+                        colors = ButtonDefaults.primaryButtonColors(
+                            backgroundColor = SaveMeRed,
+                            contentColor = Color.White,
+                        ),
+                    ) {
+                        Text(
+                            text = "Activează butoanele",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
+                }
             }
         }
     }

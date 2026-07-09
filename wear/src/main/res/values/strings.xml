@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Save Me</string>
+    <string name="accessibility_service_label">Save Me Button</string>
+    <string name="accessibility_service_description">Permite butonului fizic al ceasului să pornească apelul de urgență (alarma) când aplicația Save Me este deschisă. Citește doar apăsările de buton, niciodată conținutul ecranului.</string>
+    <string name="enable_buttons">Activează butoanele</string>
 </resources>

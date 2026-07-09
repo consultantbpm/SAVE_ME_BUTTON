@@ -49,6 +49,23 @@
             </intent-filter>
         </activity>
 
+        <!-- Captures the upper hardware button hold to start the panic call even
+             when the system would swallow it (Samsung). Opt-in from Settings →
+             Accessibility. Parallel path to MainActivity's own key handling;
+             does not change the panic/escalation logic. -->
+        <service
+            android:name=".accessibility.SaveMeButtonAccessibilityService"
+            android:exported="true"
+            android:label="@string/accessibility_service_label"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/saveme_accessibility_config" />
+        </service>
+
         <service
             android:name=".sync.PhoneListenerService"
             android:exported="true">
