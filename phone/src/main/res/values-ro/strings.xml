@@ -10,6 +10,8 @@
     <string name="label_message">Mesaj</string>
     <string name="hint_coords_appended">Coordonatele sunt adăugate automat.</string>
     <string name="section_settings">Setări</string>
+    <string name="setting_hold_seconds">Ține apăsat pentru declanșare</string>
+    <string name="setting_hold_seconds_help">Cât timp trebuie ținut apăsat butonul superior (sau butonul captat prin accesibilitate) înainte să înceapă numărătoarea inversă SOS.</string>
     <string name="setting_cancel_taps">Atingeri pentru anulare</string>
     <string name="setting_countdown">Numărătoare inversă</string>
     <string name="setting_per_contact_wait">Așteptare per contact</string>
@@ -38,4 +40,19 @@
     <string name="test_dialog_message">Testează aplicația și de pe ceas. Se recomandă un ceas cu număr activ; altfel, ține telefonul conectat și aproape.</string>
     <string name="test_dialog_confirm">PORNEȘTE TESTUL</string>
     <string name="test_dialog_cancel">ANULEAZĂ</string>
+    <string name="premium_section_title">Premium (opțional)</string>
+    <string name="premium_explainer">Toate funcțiile de siguranță (declanșator de panică, SMS și apeluri către contactele tale) sunt gratuite pentru totdeauna. Premium deblochează doar editarea mesajului SMS personalizat.</string>
+    <string name="premium_sms_locked_hint">Editarea mesajului este un avantaj Premium. Utilizatorii gratuiți trimit mesajul implicit, care funcționează integral.</string>
+    <string name="premium_status_active">Stare: PREMIUM</string>
+    <string name="premium_status_trial">Perioadă de probă: mai sunt %1$d h %2$d m</string>
+    <string name="premium_status_expired">Perioada de probă a expirat (funcțiile de siguranță rămân gratuite)</string>
+    <string name="premium_unlock">Deblochează · %1$s</string>
+    <string name="premium_restore">Restaurează</string>
+    <string name="content_desc_expand">Extinde</string>
+    <string name="content_desc_collapse">Restrânge</string>
+    <string name="about_title_section">Despre</string>
+    <string name="about_disability_credit">Aplicatie construita cu AI de o persoana cu dizabilitati. Sprijina persoanele cu dizabilitati cumparand aplicatii.</string>
+    <string name="about_portfolio_button">Portofoliu</string>
+    <string name="about_rate_button">Evalueaza</string>
+    <string name="about_version_format">Versiune: %1$s (build %2$d)</string>
 </resources>

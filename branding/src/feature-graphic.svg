@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Save Me Button — Play Store feature graphic 1024×500 -->
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="500" viewBox="0 0 1024 500">
+  <rect width="1024" height="500" fill="#1A0A0A"/>
+  <rect x="600" width="424" height="500" fill="#080C0E"/>
+  <ellipse cx="270" cy="250" rx="320" ry="260" fill="#DC2626" opacity="0.20"/>
+  <ellipse cx="270" cy="250" rx="220" ry="180" fill="#DC2626" opacity="0.25"/>
+  <ellipse cx="270" cy="250" rx="120" ry="100" fill="#DC2626" opacity="0.32"/>
+
+  <g transform="translate(50,40) scale(0.82)">
+    <rect width="512" height="512" rx="80" fill="#080C0E"/>
+    <circle cx="256" cy="256" r="180" fill="#DC2626"/>
+    <circle cx="256" cy="256" r="142" fill="#0B1220"/>
+    <circle cx="256" cy="256" r="142" fill="none" stroke="#FCA5A5" stroke-width="3"/>
+    <rect x="370" y="216" width="28" height="80" rx="4" fill="#FFFFFF"/>
+    <rect x="408" y="244" width="22" height="24" rx="4" fill="#EF4444"/>
+    <rect x="358" y="180" width="24" height="40" rx="4" fill="#FCA5A5"/>
+    <circle cx="256" cy="256" r="108" fill="#EF4444"/>
+    <circle cx="256" cy="256" r="108" fill="none" stroke="#7F1D1D" stroke-width="4"/>
+    <ellipse cx="256" cy="208" rx="70" ry="16" fill="#FCA5A5" opacity="0.55"/>
+    <text x="256" y="282" font-family="Arial Black, Helvetica, sans-serif" font-weight="900" font-size="76" fill="#FFFFFF" text-anchor="middle" letter-spacing="2">SOS</text>
+    <rect x="156" y="172" width="24" height="8" rx="1" fill="#FFFFFF"/>
+    <rect x="164" y="164" width="8" height="24" rx="1" fill="#FFFFFF"/>
+  </g>
+
+  <g font-family="Helvetica Neue, Arial, sans-serif" fill="#FFFFFF">
+    <text x="510" y="210" font-size="64" font-weight="800" letter-spacing="-1">Save Me Button</text>
+    <text x="510" y="262" font-size="28" font-weight="500" fill="#FCA5A5">When you can&apos;t reach your phone.</text>
+    <text x="510" y="308" font-size="21" font-weight="400" fill="#FECACA">UPPER · hold 3 s · start SOS countdown</text>
+    <text x="510" y="336" font-size="21" font-weight="600" fill="#FFFFFF">Crown Button combo: POWER short + UPPER 3 s</text>
+    <text x="510" y="364" font-size="21" font-weight="400" fill="#FECACA">SMS + call to 3 contacts with GPS coords</text>
+    <text x="510" y="392" font-size="21" font-weight="400" fill="#FECACA">Triple-tap screen to cancel</text>
+  </g>
+
+  <g font-family="Helvetica Neue, Arial, sans-serif" fill="#FCA5A5" opacity="0.85">
+    <text x="974" y="470" font-size="18" font-weight="600" text-anchor="end">A Crown Button add-on</text>
+  </g>
+</svg>

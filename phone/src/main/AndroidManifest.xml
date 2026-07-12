@@ -19,6 +19,15 @@
         </intent>
     </queries>
 
+    <!--
+      allowBackup=false is intentional (privacy decision for this SOS app): we do
+      not want panic-contact / location data riding Android Auto Backup to Google
+      Drive. Consequence: trial-start timestamp is NOT reinstall-protected via
+      backup like the rest of the Crown family. Reinstall-protection for the
+      trial is deliberately DEFERRED to the remote entitlement endpoint (see
+      entitlement-endpoint/) instead of local backup rules — once wired up, that
+      endpoint alone survives uninstall/reinstall.
+    -->
     <application
         android:name=".PhoneApplication"
         android:allowBackup="false"

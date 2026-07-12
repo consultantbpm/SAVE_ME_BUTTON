@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#080C0E"/>
+
+  <!-- bezel + LCD face -->
+  <circle cx="256" cy="256" r="200" fill="#DC2626"/>
+  <circle cx="256" cy="256" r="170" fill="#A8B89A"/>
+  <circle cx="256" cy="256" r="170" fill="none" stroke="#FFFFFF" stroke-width="3" opacity="0.4"/>
+
+  <!-- crown stem (family colors, riding the bezel) -->
+  <rect x="378" y="180" width="24" height="40" rx="4" fill="#BFDBFE"/>
+  <rect x="390" y="216" width="28" height="80" rx="4" fill="#FFFFFF"/>
+  <rect x="428" y="244" width="22" height="24" rx="4" fill="#60A5FA"/>
+
+  <!-- panic button cap (RED, bigger) -->
+  <circle cx="232" cy="246" r="118" fill="#DC2626"/>
+  <!-- darker outer rim -->
+  <circle cx="232" cy="246" r="118" fill="none" stroke="#7F1D1D" stroke-width="4"/>
+  <!-- top sheen -->
+  <ellipse cx="232" cy="196" rx="78" ry="18" fill="#FCA5A5" opacity="0.65"/>
+
+  <!-- SOS lettermark (bigger) -->
+  <text x="232" y="272" font-family="Arial Black, Helvetica, sans-serif"
+        font-weight="900" font-size="82" text-anchor="middle" fill="#FFFFFF" letter-spacing="3">SOS</text>
+
+  <!-- medical cross top-left -->
+  <rect x="98"  y="126" width="32" height="10" rx="2" fill="#0A0A0A"/>
+  <rect x="109" y="115" width="10" height="32" rx="2" fill="#0A0A0A"/>
+
+  <!-- pulse dots bottom-left, fading -->
+  <circle cx="148" cy="390" r="9" fill="#0A0A0A"/>
+  <circle cx="176" cy="390" r="7" fill="#0A0A0A" opacity="0.6"/>
+  <circle cx="200" cy="390" r="5" fill="#0A0A0A" opacity="0.4"/>
+
+</svg>

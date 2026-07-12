@@ -2,7 +2,7 @@
 
 Single source of truth for behavior. Update before commit, not after.
 
-**Last updated:** 2026-05-02 (SMS coordinates appended in DMS + maps URL; TEST confirmation dialog; voicemail-trap-escape SKIP; perContactWait default 30→20; phone localization for de/es/fr/ja/ko/ro/zh)
+**Last updated:** 2026-07-11 (Crown-family UI parity pass: phone Settings screen rebuilt on ported `SectionCard`/white-palette from Crown Button / Answer Button, all sections collapsible with only About expanded; About section ported 1:1 from Crown — accessibility credit, Portfolio, Rate, version, strings verbatim across all 8 locales; added the missing `holdSeconds` slider to Settings, see "Button-duration configuration" below)
 
 ---
 
@@ -35,6 +35,25 @@ Persisted on phone (SharedPreferences `savemebutton_prefs`) and mirrored to watc
 If any contact's `number` is blank when SOS triggers, that slot is skipped (in every cycle).
 
 Settings on the phone use a draft/saved model: edits stay in draft until **SAVE** is tapped (which persists + pushes to watch). **TEST** opens a confirmation dialog (`test_dialog_message`) explaining that real SMS and a real call will be sent and recommending testing from the watch with an active SIM where possible. Tapping **START TEST** in the dialog runs Save + the real SOS sequence locally on the phone.
+
+---
+
+## Button-duration configuration (why the Crown multi-band slider set does NOT apply here)
+
+Crown Button's phone UI exposes a `GlobalButtonConfigCard`: an 8-slot press-duration-band system (`WatchButtonConfig.powerThresholds` / `upperThresholds`, per-band enable flags, `withThresholdDrag`/`withBandEnabledToggle`) because Crown's watch button is a **launcher/navigation** control with up to 4 distinct actions per physical button, each keyed to a configurable duration band.
+
+Save Me Button's SOS trigger has no equivalent model. It is a **single hold-to-fire** action (`holdSeconds`) that starts a **linear** sequence — countdown → locate → SMS+call escalation — with no alternate actions bound to different hold durations. There is nothing to band, no per-slot action dropdown, and no per-band enable/disable: adopting `GlobalButtonConfigCard` verbatim would force a multi-action-picker UI onto a button that only ever does one thing, so it was intentionally **not ported**.
+
+Instead, every timing value that actually exists in this app's trigger/escalation model is exposed as an `IntSlider` in the phone's **Settings** `SectionCard` (`MainUI.kt`), synced to the watch the same way as before (whole `SosConfig` blob pushed via `DataClient` on **SAVE**; wear's `SosViewModel.configHoldSeconds()` etc. read the synced value live — no watch-side code changes were needed):
+
+| Slider | Backing field | Range | What it changes |
+|---|---|---|---|
+| Hold to trigger | `holdSeconds` | 3–5 s | How long the upper button (or the accessibility-captured key) must be held before the countdown starts. Was already wired end-to-end (`MainActivity.onKeyDown`, `SaveMeButtonAccessibilityService.resolveHoldMs()`, `SosConfig.normalized()`) but had no phone-UI control until this pass — added here. |
+| Countdown | `countdownSeconds` | 5–10 s | Pre-escalation countdown length (already existed). |
+| Cancel taps | `cancelTaps` | 3–5 | Screen taps to abort (already existed). |
+| Per-contact wait | `perContactWaitSeconds` | 15–60 s | Offhook wait before escalating to the next contact (already existed). |
+
+None of these defaults changed — `holdSeconds` still defaults to 3 s, matching prior (hardcoded-equivalent) behavior. The SOS reliability path (trigger → countdown → SMS → call → escalate) is unmodified; only a previously-missing configuration control was surfaced.
 
 ---
 
@@ -264,16 +283,39 @@ phone/src/main/java/com/savemebutton/phone/
   presentation/MainViewModel.kt   ✎ draft/saved model, SAVE, TEST, all setters
   presentation/MainUI.kt          ✎ All UI strings now via `stringResource(R.string.*)`;
                                     TEST button opens an `AlertDialog` (`test_dialog_*`);
-                                    voicemail-trap-escape toggle row.
-  presentation/Theme.kt           (unchanged)
-  res/values/strings.xml          ⊕ source-of-truth English strings.
-  res/values-{de,es,fr,ja,ko,ro,zh}/strings.xml  ⊕ localized strings (locale set mirrored from Crown Button).
+                                    voicemail-trap-escape toggle row. Rebuilt on top of
+                                    the ported `SectionCard` (Contacts / Default SMS /
+                                    Settings / Alert sound / Premium collapsed by
+                                    default, About expanded); added the `holdSeconds`
+                                    `IntSlider` to Settings; About ported 1:1 from
+                                    Crown Button.
+  presentation/Theme.kt           ✎ Ported Crown/Answer Button's `PhoneThemePalette` +
+                                    `SectionCard` + `AboutButton` (collapsible white
+                                    card, uppercase 13sp title, expand/collapse
+                                    chevron) into this app's package. Brand accent
+                                    kept as Save Me's panic red (`SaveMeRed` =
+                                    `0xFFFF1744`) instead of Crown's blue — only the
+                                    card/theme STRUCTURE was ported, not Crown's color.
+  res/values/strings.xml          ⊕ source-of-truth English strings; + About section
+                                    strings (`about_title_section`, `about_disability_
+                                    credit`, `about_portfolio_button`, `about_rate_
+                                    button`, `about_version_format`) copied verbatim
+                                    from Crown Button's strings.xml, + `content_desc_
+                                    expand`/`collapse`, + `setting_hold_seconds(_help)`.
+  res/values-{de,es,fr,ja,ko,ro,zh}/strings.xml  ⊕ localized strings (locale set mirrored from Crown Button);
+                                    same About + hold-seconds strings added, About
+                                    translations copied verbatim from Crown's per-locale
+                                    strings.xml.
 ```
+
+Icon dependency: `phone/build.gradle.kts` gained `implementation(libs.compose.icons.core)` (`androidx.compose.material:material-icons-core`, version resolved by the existing `compose-bom` platform) — needed for `Icons.Default.KeyboardArrowDown/Up` used by the ported `SectionCard` chevron. No other module needed a new dependency.
 
 ---
 
 ## Localization
 
-Phone module is localized for **en (default), de, es, fr, ja, ko, ro, zh** — the same set Crown Button supports. App name (`Save Me Button`) is kept in Latin script across all locales; the in-UI red title (`app_title`) is translated for emotional impact (e.g. `HILFE`, `AYUDA`, `AU SECOURS`, `助けて`, `도와주세요`, `AJUTOR`, `救命`). All other UI strings, including the TEST confirmation dialog and the voicemail-trap-escape labels, are translated.
+Phone module is localized for **en (default), de, es, fr, ja, ko, ro, zh** — the same set Crown Button supports. App name (`Save Me Button`) is kept in Latin script across all locales; the in-UI red title (`app_title`) is translated for emotional impact (e.g. `HILFE`, `AYUDA`, `AU SECOURS`, `助けて`, `도와주세요`, `AJUTOR`, `救命`). All other UI strings, including the TEST confirmation dialog, the voicemail-trap-escape labels, and the new hold-seconds slider labels, are translated.
+
+The About section's strings (`about_title_section`, `about_disability_credit`, `about_portfolio_button`, `about_rate_button`, `about_version_format`, `content_desc_expand`, `content_desc_collapse`) were copied **verbatim** from Crown Button's `strings.xml` in every one of the 8 locales (not re-translated), so the credit/Portfolio/Rate/version wording matches word-for-word across the whole Crown family.
 
 The watch module is intentionally not localized (deferred — its UI is a few short status lines).

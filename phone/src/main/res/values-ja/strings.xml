@@ -10,6 +10,8 @@
     <string name="label_message">メッセージ</string>
     <string name="hint_coords_appended">座標は自動的に追加されます。</string>
     <string name="section_settings">設定</string>
+    <string name="setting_hold_seconds">長押しで起動</string>
+    <string name="setting_hold_seconds_help">SOSのカウントダウンが始まるまでに、上部ボタン（またはアクセシビリティで捕捉されたボタン）を押し続ける長さ。</string>
     <string name="setting_cancel_taps">キャンセルのタップ回数</string>
     <string name="setting_countdown">カウントダウン</string>
     <string name="setting_per_contact_wait">連絡先ごとの待機</string>
@@ -38,4 +40,19 @@
     <string name="test_dialog_message">ウォッチからもアプリをテストしてください。アクティブな番号を持つウォッチを推奨します。そうでない場合は、スマホを接続したまま近くに置いてください。</string>
     <string name="test_dialog_confirm">テスト開始</string>
     <string name="test_dialog_cancel">キャンセル</string>
+    <string name="premium_section_title">プレミアム（任意）</string>
+    <string name="premium_explainer">すべての安全機能（パニック起動、連絡先への SMS と電話）は永久に無料です。プレミアムはカスタム SMS メッセージの編集のみを解放します。</string>
+    <string name="premium_sms_locked_hint">メッセージの編集はプレミアム限定機能です。無料ユーザーは既定のメッセージを送信し、それでも問題なく機能します。</string>
+    <string name="premium_status_active">ステータス: プレミアム</string>
+    <string name="premium_status_trial">無料トライアル：残り %1$d 時間 %2$d 分</string>
+    <string name="premium_status_expired">無料トライアルが終了しました（安全機能は引き続き無料です）</string>
+    <string name="premium_unlock">アンロック · %1$s</string>
+    <string name="premium_restore">復元</string>
+    <string name="content_desc_expand">展開</string>
+    <string name="content_desc_collapse">折りたたむ</string>
+    <string name="about_title_section">このアプリについて</string>
+    <string name="about_disability_credit">障害のある開発者が AI を使って作成したアプリです。アプリを購入して障害のある人を支援してください。</string>
+    <string name="about_portfolio_button">ポートフォリオ</string>
+    <string name="about_rate_button">評価</string>
+    <string name="about_version_format">バージョン: %1$s (ビルド %2$d)</string>
 </resources>

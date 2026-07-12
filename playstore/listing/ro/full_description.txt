@@ -1,0 +1,37 @@
+Save Me Button transformă ceasul tău Wear OS într-un buton personal de urgență. Când ai nevoie de ajutor, ții apăsat butonul fizic al ceasului (implicit 3 secunde, reglabil până la 5) ca să pornești o secvență de urgență - direct de pe încheietură.
+
+CUM FUNCȚIONEAZĂ
+Ții apăsat butonul, iar Save Me Button:
+- Pornește o numărătoare inversă cu alarmă sonoră și vibrații, ca să știi sigur că s-a activat
+- Trimite un SMS cu locația ta - coordonate GPS plus un link către hartă - către contactele tale de urgență
+- Sună până la 3 contacte, unul după altul
+- Repetă secvența de apeluri până când răspunde cineva
+
+Dacă ceasul are conexiune celulară proprie (SIM/eSIM activ), totul rulează direct de pe ceas. Altfel, funcționează automat prin aplicația companion de pe telefon. Oricum, ajutorul este la o apăsare de buton distanță.
+
+Dacă un apel ajunge la mesageria vocală, poți sări manual la următorul contact în loc să aștepți inutil.
+
+ANULARE RAPIDĂ
+Ai pornit-o din greșeală? Atingi ecranul de mai multe ori la rând (implicit 3 atingeri, reglabil) și întreaga secvență se anulează.
+
+FUNCȚIONEAZĂ ȘI CÂND APLICAȚIA NU E ACTIVĂ PE ECRAN
+Cu Serviciul de accesibilitate activat din setările telefonului, apăsarea butonului este recunoscută chiar și când aplicația Save Me Button nu este deschisă - util pe ceasurile unde butonul fizic nu ajunge mereu direct la aplicație.
+
+ALARMA ESTE MEREU GRATUITĂ
+Funcția SOS de urgență - SMS-ul, apelarea contactelor și repetarea automată - este gratuită pentru totdeauna și nu este niciodată blocată în spatele unei plăți. Siguranța ta nu este o funcție premium.
+
+DEBLOCARE OPȚIONALĂ
+Ai 24 de ore de testare gratuită a editării textului personalizat al SMS-ului de urgență. După aceea, o singură achiziție unică de 2,99 EUR deblochează definitiv editarea acestui text. Mesajul implicit ("Am nevoie de ajutor. Locația mea:") rămâne complet funcțional și gratuit chiar dacă nu cumperi nimic - personalizarea textului este singurul lucru opțional.
+
+PERMISIUNI NECESARE
+Aplicația are nevoie de permisiuni pentru SMS, apeluri telefonice și locație - fără ele, secvența de urgență nu poate trimite mesaje, suna contactele sau include coordonatele tale. Aceste permisiuni sunt folosite exclusiv pentru funcția de urgență.
+
+APLICAȚIE COMPANION PE TELEFON
+Îți configurezi contactele, mesajul și setările de declanșare (durata de apăsare, numărul de atingeri pentru anulare, timpul de așteptare per contact) în aplicația companion de pe telefon, apoi lași ceasul - sau telefonul, dacă e nevoie - să facă restul.
+
+FACE PARTE DIN FAMILIA CROWN
+Save Me Button face parte din familia de aplicații Crown pentru butoane fizice pe Wear OS. Dacă ai instalat și Crown Button, Save Me Button poate fi lansat și dintr-o apăsare specială, foarte lungă, a aceluiași buton fizic.
+
+Adaugă Save Me Button și poartă o plasă de siguranță pe încheietură.
+
+Notă importantă: nicio aplicație nu poate garanta livrarea unui SMS sau conectarea unui apel - acestea depind de semnalul rețelei mobile, de baterie și de disponibilitatea contactelor tale. Save Me Button automatizează și repetă încercările de contactare, dar nu poate promite mai mult decât atât.

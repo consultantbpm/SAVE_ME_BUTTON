@@ -1,0 +1,21 @@
+SCREENSHOTS — PENDING FINAL UI
+
+Phone (companion app):
+- Contacts section (3 emergency contacts + names/numbers)
+- Default SMS body section
+- Settings section (hold seconds, cancel taps, countdown seconds, per-contact wait)
+- Alert sound section (siren target/sound/volume, loud minute pulse)
+- Premium / trial state (24h trial banner + one-time unlock row)
+- About section (accessibility credit, Portfolio, Rate, version)
+- TEST confirmation dialog
+
+Wear OS (watch):
+- Idle screen ("SAVE ME" + hold-seconds hint)
+- Countdown screen (large number, red background, cancel-taps hint)
+- Canceled screen
+- Sending SMS / Calling screen (per-contact status)
+- CallActive / voicemail-skip button state
+- Stopped screen
+- Done / summary screen
+
+Do not capture until phone Settings screen (SectionCard rebuild) and watch UI are in their final signed-off state. Screenshots deferred per instruction — no device screenshots taken during this Play Store asset pass (2026-07-11).

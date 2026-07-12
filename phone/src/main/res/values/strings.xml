@@ -10,6 +10,8 @@
     <string name="label_message">Message</string>
     <string name="hint_coords_appended">Coordinates are appended automatically.</string>
     <string name="section_settings">Settings</string>
+    <string name="setting_hold_seconds">Hold to trigger</string>
+    <string name="setting_hold_seconds_help">How long to hold the upper button (or the accessibility-captured button) before the SOS countdown starts.</string>
     <string name="setting_cancel_taps">Cancel taps</string>
     <string name="setting_countdown">Countdown</string>
     <string name="setting_per_contact_wait">Per-contact wait</string>
@@ -46,4 +48,11 @@
     <string name="premium_status_expired">Free trial ended (safety features still free)</string>
     <string name="premium_unlock">Unlock · %1$s</string>
     <string name="premium_restore">Restore</string>
+    <string name="content_desc_expand">Expand</string>
+    <string name="content_desc_collapse">Collapse</string>
+    <string name="about_title_section">About</string>
+    <string name="about_disability_credit">Application built with AI by a person with disabilities. Support disabled people by buying apps.</string>
+    <string name="about_portfolio_button">Portfolio</string>
+    <string name="about_rate_button">Rate</string>
+    <string name="about_version_format">Version: %1$s (build %2$d)</string>
 </resources>

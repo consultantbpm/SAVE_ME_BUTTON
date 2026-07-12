@@ -10,6 +10,8 @@
     <string name="label_message">Mensaje</string>
     <string name="hint_coords_appended">Las coordenadas se añaden automáticamente.</string>
     <string name="section_settings">Ajustes</string>
+    <string name="setting_hold_seconds">Mantener para activar</string>
+    <string name="setting_hold_seconds_help">Cuánto tiempo hay que mantener pulsado el botón superior (o el botón detectado por accesibilidad) antes de que empiece la cuenta atrás del SOS.</string>
     <string name="setting_cancel_taps">Toques para cancelar</string>
     <string name="setting_countdown">Cuenta atrás</string>
     <string name="setting_per_contact_wait">Espera por contacto</string>
@@ -38,4 +40,19 @@
     <string name="test_dialog_message">Prueba la aplicación también desde el reloj. Se recomienda un reloj con número activo; de lo contrario, mantén el teléfono conectado y cerca.</string>
     <string name="test_dialog_confirm">INICIAR PRUEBA</string>
     <string name="test_dialog_cancel">CANCELAR</string>
+    <string name="premium_section_title">Premium (opcional)</string>
+    <string name="premium_explainer">Todas las funciones de seguridad (activación de pánico, SMS y llamadas a tus contactos) son gratuitas para siempre. Premium solo desbloquea la edición del mensaje SMS personalizado.</string>
+    <string name="premium_sms_locked_hint">Editar el mensaje es un extra Premium. Los usuarios gratuitos envían el mensaje predeterminado, que funciona completamente.</string>
+    <string name="premium_status_active">Estado: PREMIUM</string>
+    <string name="premium_status_trial">Prueba gratuita: quedan %1$d h %2$d min</string>
+    <string name="premium_status_expired">Prueba gratuita finalizada (las funciones de seguridad siguen siendo gratis)</string>
+    <string name="premium_unlock">Desbloquear · %1$s</string>
+    <string name="premium_restore">Restaurar</string>
+    <string name="content_desc_expand">Expandir</string>
+    <string name="content_desc_collapse">Contraer</string>
+    <string name="about_title_section">Acerca de</string>
+    <string name="about_disability_credit">Aplicacion creada con IA por una persona con discapacidad. Apoya a las personas con discapacidad comprando apps.</string>
+    <string name="about_portfolio_button">Portafolio</string>
+    <string name="about_rate_button">Valorar</string>
+    <string name="about_version_format">Version: %1$s (build %2$d)</string>
 </resources>

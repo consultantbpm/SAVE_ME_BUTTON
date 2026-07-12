@@ -10,6 +10,8 @@
     <string name="label_message">Nachricht</string>
     <string name="hint_coords_appended">Koordinaten werden automatisch angehängt.</string>
     <string name="section_settings">Einstellungen</string>
+    <string name="setting_hold_seconds">Halten zum Auslösen</string>
+    <string name="setting_hold_seconds_help">Wie lange die obere Taste (oder die per Bedienungshilfe erkannte Taste) gehalten werden muss, bevor der SOS-Countdown startet.</string>
     <string name="setting_cancel_taps">Tipps zum Abbrechen</string>
     <string name="setting_countdown">Countdown</string>
     <string name="setting_per_contact_wait">Wartezeit pro Kontakt</string>
@@ -38,4 +40,19 @@
     <string name="test_dialog_message">Teste die App auch von der Uhr. Empfohlen wird eine Uhr mit aktiver Nummer, andernfalls Telefon verbunden und in der Nähe halten.</string>
     <string name="test_dialog_confirm">TEST STARTEN</string>
     <string name="test_dialog_cancel">ABBRECHEN</string>
+    <string name="premium_section_title">Premium (optional)</string>
+    <string name="premium_explainer">Alle Sicherheitsfunktionen (Alarmauslöser, SMS und Anrufe an deine Kontakte) sind für immer kostenlos. Premium schaltet nur das Bearbeiten der eigenen SMS-Nachricht frei.</string>
+    <string name="premium_sms_locked_hint">Das Bearbeiten der Nachricht ist ein Premium-Extra. Kostenlose Nutzer senden die Standardnachricht, die vollständig funktioniert.</string>
+    <string name="premium_status_active">Status: PREMIUM</string>
+    <string name="premium_status_trial">Kostenlose Testphase: noch %1$d Std %2$d Min</string>
+    <string name="premium_status_expired">Kostenlose Testphase beendet (Sicherheitsfunktionen weiterhin kostenlos)</string>
+    <string name="premium_unlock">Freischalten · %1$s</string>
+    <string name="premium_restore">Wiederherstellen</string>
+    <string name="content_desc_expand">Ausklappen</string>
+    <string name="content_desc_collapse">Einklappen</string>
+    <string name="about_title_section">Ueber</string>
+    <string name="about_disability_credit">App mit KI von einer Person mit Behinderung erstellt. Unterstuetze Menschen mit Behinderung, indem du Apps kaufst.</string>
+    <string name="about_portfolio_button">Portfolio</string>
+    <string name="about_rate_button">Bewerten</string>
+    <string name="about_version_format">Version: %1$s (Build %2$d)</string>
 </resources>

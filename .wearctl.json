@@ -1,0 +1,17 @@
+﻿{
+    "watchModule":  "wear",
+    "watchPackage":  "com.savemebutton.app",
+    "phoneModule":  "phone",
+    "phonePackage":  "com.savemebutton.app",
+    "debugSuffix":  ".debug",
+    "logcatTags":  [
+                       "WearKeys",
+                       "WearNav",
+                       "WearCatalog",
+                       "WearList",
+                       "WearDrawer",
+                       "WearRecents",
+                       "PhoneMainViewModel",
+                       "PhoneWearListener"
+                   ]
+}

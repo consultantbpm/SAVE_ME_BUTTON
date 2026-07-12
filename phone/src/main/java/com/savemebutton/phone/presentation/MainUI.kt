@@ -16,8 +16,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -46,6 +44,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.pm.PackageInfoCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.savemebutton.phone.R
 import com.savemebutton.shared.SirenSound
@@ -72,7 +71,7 @@ fun MainScreen(
         ) {
             Text(
                 text = stringResource(R.string.app_title),
-                color = Color(0xFFFF1744),
+                color = SaveMeRed,
                 fontWeight = FontWeight.Black,
                 fontSize = 32.sp,
             )
@@ -94,7 +93,7 @@ fun MainScreen(
                 OutlinedButton(
                     onClick = { viewModel.onTestClicked() },
                     colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = Color(0xFFFF1744),
+                        contentColor = SaveMeRed,
                     ),
                     modifier = Modifier.weight(1f),
                 ) { Text(stringResource(R.string.action_test)) }
@@ -102,122 +101,152 @@ fun MainScreen(
 
             Spacer(Modifier.height(4.dp))
 
-            Text(stringResource(R.string.section_contacts), style = MaterialTheme.typography.titleMedium)
-            draft.contacts.forEachIndexed { idx, contact ->
-                ContactRow(
-                    index = idx,
-                    name = contact.name,
-                    number = contact.number,
-                    onChange = { name, number -> viewModel.updateContact(idx, name, number) },
+            SectionCard(title = stringResource(R.string.section_contacts)) {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    draft.contacts.forEachIndexed { idx, contact ->
+                        ContactRow(
+                            index = idx,
+                            name = contact.name,
+                            number = contact.number,
+                            onChange = { name, number -> viewModel.updateContact(idx, name, number) },
+                        )
+                    }
+                }
+            }
+
+            SectionCard(title = stringResource(R.string.section_default_sms)) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    // Cosmetic premium gate: free users keep the DEFAULT message
+                    // (fully functional). Premium/trial unlocks editing to a
+                    // custom text. The SOS sending path is never gated.
+                    val smsEditable = premium.hasFullAccess
+                    OutlinedTextField(
+                        value = if (smsEditable) draft.smsBody else viewModel.defaultSmsBody,
+                        onValueChange = viewModel::updateSmsBody,
+                        label = { Text(stringResource(R.string.label_message)) },
+                        readOnly = !smsEditable,
+                        enabled = smsEditable,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    Text(
+                        stringResource(R.string.hint_coords_appended),
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                    if (!smsEditable) {
+                        Text(
+                            stringResource(R.string.premium_sms_locked_hint),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = SaveMeRed,
+                        )
+                    }
+                }
+            }
+
+            SectionCard(title = stringResource(R.string.section_settings)) {
+                // Save Me Button's SOS trigger is a SINGLE hold-to-fire action
+                // followed by a linear countdown → escalation sequence (see
+                // CLAUDE.md / SPEC.md state machine) — it is NOT Crown Button's
+                // 8-slot multi-band press system (GlobalButtonConfigCard,
+                // per-band ms thresholds with enable/disable per band). That
+                // model has no equivalent here and is intentionally NOT ported.
+                // Instead, every timing value that actually exists in this
+                // app's model is exposed below: hold duration to trigger,
+                // countdown length, cancel-tap gesture, and per-contact
+                // escalation wait. See SPEC.md "Button-duration configuration".
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    IntSlider(
+                        label = stringResource(R.string.setting_hold_seconds),
+                        value = draft.holdSeconds,
+                        range = 3..5,
+                        unit = secondsSuffix,
+                        onChange = viewModel::setHoldSeconds,
+                    )
+                    Text(
+                        stringResource(R.string.setting_hold_seconds_help),
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                    IntSlider(
+                        label = stringResource(R.string.setting_countdown),
+                        value = draft.countdownSeconds,
+                        range = 5..10,
+                        unit = secondsSuffix,
+                        onChange = viewModel::setCountdownSeconds,
+                    )
+                    IntSlider(
+                        label = stringResource(R.string.setting_cancel_taps),
+                        value = draft.cancelTaps,
+                        range = 3..5,
+                        unit = "",
+                        onChange = viewModel::setCancelTaps,
+                    )
+                    IntSlider(
+                        label = stringResource(R.string.setting_per_contact_wait),
+                        value = draft.perContactWaitSeconds,
+                        range = 15..60,
+                        unit = secondsSuffix,
+                        onChange = viewModel::setPerContactWaitSeconds,
+                    )
+                    ToggleRow(
+                        label = stringResource(R.string.setting_voicemail_trap_escape),
+                        checked = draft.voicemailTrapEscape,
+                        onChange = viewModel::setVoicemailTrapEscape,
+                    )
+                    Text(
+                        stringResource(R.string.setting_voicemail_trap_escape_help),
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+            }
+
+            SectionCard(title = stringResource(R.string.section_alert_sound)) {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    ToggleRow(
+                        label = stringResource(R.string.setting_alert_sound_enabled),
+                        checked = draft.sirenEnabled,
+                        onChange = viewModel::setSirenEnabled,
+                    )
+                    if (draft.sirenEnabled) {
+                        Text(stringResource(R.string.label_play_on), style = MaterialTheme.typography.bodyMedium)
+                        SirenTargetSelector(
+                            selected = draft.sirenTarget,
+                            onChange = viewModel::setSirenTarget,
+                        )
+                        SoundDropdown(
+                            selected = draft.sirenSound,
+                            onChange = viewModel::setSirenSound,
+                        )
+                        OutlinedButton(
+                            onClick = { viewModel.previewSiren() },
+                            modifier = Modifier.fillMaxWidth(),
+                        ) { Text(stringResource(R.string.action_preview)) }
+                        Text(
+                            stringResource(R.string.label_volume, (draft.sirenVolume * 100).toInt()),
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                        Slider(
+                            value = draft.sirenVolume,
+                            onValueChange = viewModel::setSirenVolume,
+                            valueRange = 0f..1f,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                        ToggleRow(
+                            label = stringResource(R.string.setting_loud_minute_pulse),
+                            checked = draft.loudMinutePulse,
+                            onChange = viewModel::setLoudMinutePulse,
+                        )
+                    }
+                }
+            }
+
+            SectionCard(title = stringResource(R.string.premium_section_title)) {
+                PremiumSectionContent(
+                    premium = premium,
+                    priceText = priceText,
+                    onUnlock = onUnlockPremium,
+                    onRestore = onRestorePurchases,
                 )
             }
 
-            Spacer(Modifier.height(8.dp))
-            Text(stringResource(R.string.section_default_sms), style = MaterialTheme.typography.titleMedium)
-            // Cosmetic premium gate: free users keep the DEFAULT message (fully
-            // functional). Premium/trial unlocks editing to a custom text. The
-            // SOS sending path is never gated.
-            val smsEditable = premium.hasFullAccess
-            OutlinedTextField(
-                value = if (smsEditable) draft.smsBody else viewModel.defaultSmsBody,
-                onValueChange = viewModel::updateSmsBody,
-                label = { Text(stringResource(R.string.label_message)) },
-                readOnly = !smsEditable,
-                enabled = smsEditable,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            Text(
-                stringResource(R.string.hint_coords_appended),
-                style = MaterialTheme.typography.bodySmall,
-            )
-            if (!smsEditable) {
-                Text(
-                    stringResource(R.string.premium_sms_locked_hint),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color(0xFFFF1744),
-                )
-            }
-
-            Spacer(Modifier.height(8.dp))
-            PremiumSection(
-                premium = premium,
-                priceText = priceText,
-                onUnlock = onUnlockPremium,
-                onRestore = onRestorePurchases,
-            )
-
-            Spacer(Modifier.height(8.dp))
-            Text(stringResource(R.string.section_settings), style = MaterialTheme.typography.titleMedium)
-            IntSlider(
-                label = stringResource(R.string.setting_cancel_taps),
-                value = draft.cancelTaps,
-                range = 3..5,
-                unit = "",
-                onChange = viewModel::setCancelTaps,
-            )
-            IntSlider(
-                label = stringResource(R.string.setting_countdown),
-                value = draft.countdownSeconds,
-                range = 5..10,
-                unit = secondsSuffix,
-                onChange = viewModel::setCountdownSeconds,
-            )
-            IntSlider(
-                label = stringResource(R.string.setting_per_contact_wait),
-                value = draft.perContactWaitSeconds,
-                range = 15..60,
-                unit = secondsSuffix,
-                onChange = viewModel::setPerContactWaitSeconds,
-            )
-            ToggleRow(
-                label = stringResource(R.string.setting_voicemail_trap_escape),
-                checked = draft.voicemailTrapEscape,
-                onChange = viewModel::setVoicemailTrapEscape,
-            )
-            Text(
-                stringResource(R.string.setting_voicemail_trap_escape_help),
-                style = MaterialTheme.typography.bodySmall,
-            )
-
-            Spacer(Modifier.height(8.dp))
-            Text(stringResource(R.string.section_alert_sound), style = MaterialTheme.typography.titleMedium)
-            ToggleRow(
-                label = stringResource(R.string.setting_alert_sound_enabled),
-                checked = draft.sirenEnabled,
-                onChange = viewModel::setSirenEnabled,
-            )
-            if (draft.sirenEnabled) {
-                Text(stringResource(R.string.label_play_on), style = MaterialTheme.typography.bodyMedium)
-                SirenTargetSelector(
-                    selected = draft.sirenTarget,
-                    onChange = viewModel::setSirenTarget,
-                )
-                SoundDropdown(
-                    selected = draft.sirenSound,
-                    onChange = viewModel::setSirenSound,
-                )
-                OutlinedButton(
-                    onClick = { viewModel.previewSiren() },
-                    modifier = Modifier.fillMaxWidth(),
-                ) { Text(stringResource(R.string.action_preview)) }
-                Text(
-                    stringResource(R.string.label_volume, (draft.sirenVolume * 100).toInt()),
-                    style = MaterialTheme.typography.bodySmall,
-                )
-                Slider(
-                    value = draft.sirenVolume,
-                    onValueChange = viewModel::setSirenVolume,
-                    valueRange = 0f..1f,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                ToggleRow(
-                    label = stringResource(R.string.setting_loud_minute_pulse),
-                    checked = draft.loudMinutePulse,
-                    onChange = viewModel::setLoudMinutePulse,
-                )
-            }
-
-            Spacer(Modifier.height(8.dp))
             AboutSection()
         }
     }
@@ -229,7 +258,7 @@ fun MainScreen(
             text = { Text(stringResource(R.string.test_dialog_message)) },
             confirmButton = {
                 TextButton(onClick = { viewModel.runTest() }) {
-                    Text(stringResource(R.string.test_dialog_confirm), color = Color(0xFFFF1744))
+                    Text(stringResource(R.string.test_dialog_confirm), color = SaveMeRed)
                 }
             },
             dismissButton = {
@@ -242,65 +271,61 @@ fun MainScreen(
 }
 
 @Composable
-private fun PremiumSection(
+private fun PremiumSectionContent(
     premium: PremiumUiState,
     priceText: String,
     onUnlock: () -> Unit,
     onRestore: () -> Unit,
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Text(stringResource(R.string.premium_section_title), style = MaterialTheme.typography.titleMedium)
-            val statusLine = when {
-                premium.isPremium -> stringResource(R.string.premium_status_active)
-                else -> {
-                    val hours = (premium.trialRemainingMs / (1000L * 60 * 60)).toInt()
-                    val minutes = ((premium.trialRemainingMs % (1000L * 60 * 60)) / (1000L * 60)).toInt()
-                    if (premium.hasFullAccess) {
-                        stringResource(R.string.premium_status_trial, hours, minutes)
-                    } else {
-                        stringResource(R.string.premium_status_expired)
-                    }
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        val statusLine = when {
+            premium.isPremium -> stringResource(R.string.premium_status_active)
+            else -> {
+                val hours = (premium.trialRemainingMs / (1000L * 60 * 60)).toInt()
+                val minutes = ((premium.trialRemainingMs % (1000L * 60 * 60)) / (1000L * 60)).toInt()
+                if (premium.hasFullAccess) {
+                    stringResource(R.string.premium_status_trial, hours, minutes)
+                } else {
+                    stringResource(R.string.premium_status_expired)
                 }
             }
-            Text(
-                statusLine,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Bold,
-                color = if (premium.hasFullAccess) Color(0xFF2E7D32) else Color(0xFFFF1744),
-            )
-            Text(
-                stringResource(R.string.premium_explainer),
-                style = MaterialTheme.typography.bodySmall,
-            )
-            if (!premium.isPremium) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Button(
-                        onClick = onUnlock,
-                        modifier = Modifier.weight(1f),
-                    ) { Text(stringResource(R.string.premium_unlock, priceText)) }
-                    OutlinedButton(
-                        onClick = onRestore,
-                        modifier = Modifier.weight(1f),
-                    ) { Text(stringResource(R.string.premium_restore)) }
-                }
+        }
+        Text(
+            statusLine,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Bold,
+            color = if (premium.hasFullAccess) Color(0xFF2E7D32) else SaveMeRed,
+        )
+        Text(
+            stringResource(R.string.premium_explainer),
+            style = MaterialTheme.typography.bodySmall,
+        )
+        if (!premium.isPremium) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Button(
+                    onClick = onUnlock,
+                    modifier = Modifier.weight(1f),
+                ) { Text(stringResource(R.string.premium_unlock, priceText)) }
+                OutlinedButton(
+                    onClick = onRestore,
+                    modifier = Modifier.weight(1f),
+                ) { Text(stringResource(R.string.premium_restore)) }
             }
         }
     }
 }
 
+/**
+ * 1:1 port of Crown Button's About card (accessibility credit, Portfolio,
+ * Rate, version) — strings copied verbatim from Crown's `strings.xml`
+ * (`about_title_section`, `about_disability_credit`, `about_portfolio_button`,
+ * `about_rate_button`, `about_version_format`) across all 8 locales. Expanded
+ * by default, matching Crown.
+ */
 @Composable
 private fun AboutSection() {
     val context = LocalContext.current
@@ -309,6 +334,12 @@ private fun AboutSection() {
             context.packageManager.getPackageInfo(context.packageName, 0).versionName
         }.getOrNull() ?: "?"
     }
+    val versionCode = remember {
+        runCatching {
+            val info = context.packageManager.getPackageInfo(context.packageName, 0)
+            PackageInfoCompat.getLongVersionCode(info).toInt()
+        }.getOrDefault(0)
+    }
 
     fun openUrl(url: String) {
         runCatching {
@@ -316,19 +347,10 @@ private fun AboutSection() {
         }
     }
 
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Text("About", style = MaterialTheme.typography.titleMedium)
+    SectionCard(title = stringResource(R.string.about_title_section), initiallyExpanded = true) {
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Text(
-                "Application built with AI by a person with disabilities. Support disabled people by buying apps.",
+                text = stringResource(R.string.about_disability_credit),
                 style = MaterialTheme.typography.bodySmall,
             )
             Row(
@@ -336,19 +358,19 @@ private fun AboutSection() {
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Button(
+                AboutButton(
+                    text = stringResource(R.string.about_portfolio_button),
                     onClick = { openUrl("https://play.google.com/store/apps/developer?id=Consultant+BPM") },
                     modifier = Modifier.weight(1f),
-                ) { Text("Portfolio") }
-                OutlinedButton(
+                )
+                AboutButton(
+                    text = stringResource(R.string.about_rate_button),
                     onClick = { openUrl("market://details?id=com.savemebutton.app") },
                     modifier = Modifier.weight(1f),
-                ) { Text("Rate") }
+                )
             }
-            Text("Version $versionName", style = MaterialTheme.typography.bodySmall)
-            Text("Package: ${context.packageName}", style = MaterialTheme.typography.bodySmall)
             Text(
-                "Part of the Crown-family watch apps.",
+                stringResource(R.string.about_version_format, versionName, versionCode),
                 style = MaterialTheme.typography.bodySmall,
             )
         }
