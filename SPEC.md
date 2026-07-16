@@ -319,3 +319,12 @@ Phone module is localized for **en (default), de, es, fr, ja, ko, ro, zh** — t
 The About section's strings (`about_title_section`, `about_disability_credit`, `about_portfolio_button`, `about_rate_button`, `about_version_format`, `content_desc_expand`, `content_desc_collapse`) were copied **verbatim** from Crown Button's `strings.xml` in every one of the 8 locales (not re-translated), so the credit/Portfolio/Rate/version wording matches word-for-word across the whole Crown family.
 
 The watch module is intentionally not localized (deferred — its UI is a few short status lines).
+
+---
+
+## Actualizari 2026-07-16 -- Audit profil gesture routing
+
+**Context:** Crown Button a actualizat WatchButtonGestureDetector cu isGestureKey() pentru redirecționare non-Power pe OnePlus/Samsung.
+
+**Concluzie Save Me Button:** Arhitectura simplă cu isTriggerKey() -- KEYCODE_STEM_PRIMARY si KEYCODE_VOLUME_DOWN. Nicio logică de profil OnePlus/Samsung necesară (funcția salvează viața indiferent de buton). Nu necesită modificări de cod.
+
