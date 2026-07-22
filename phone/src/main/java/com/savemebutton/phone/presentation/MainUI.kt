@@ -49,7 +49,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.savemebutton.phone.R
 import com.savemebutton.shared.SirenSound
 import com.savemebutton.shared.SirenTarget
-
+import com.savemebutton.shared.WatchProfile
+import androidx.compose.foundation.Canvas
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.ui.input.pointer.pointerInput
+import kotlin.math.roundToInt
 @Composable
 fun MainScreen(
     viewModel: MainViewModel,
@@ -61,6 +67,7 @@ fun MainScreen(
     val testDialogShown by viewModel.testDialogShown.collectAsStateWithLifecycle()
     val premium by viewModel.premium.collectAsStateWithLifecycle()
     val priceText by viewModel.priceText.collectAsStateWithLifecycle()
+    var showWalkthrough by remember { mutableStateOf(false) }
     val secondsSuffix = stringResource(R.string.suffix_seconds)
     Surface(modifier = Modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.background) {
         Column(
@@ -143,23 +150,25 @@ fun MainScreen(
             }
 
             SectionCard(title = stringResource(R.string.section_settings)) {
-                // Save Me Button's SOS trigger is a SINGLE hold-to-fire action
-                // followed by a linear countdown → escalation sequence (see
-                // CLAUDE.md / SPEC.md state machine) — it is NOT Crown Button's
-                // 8-slot multi-band press system (GlobalButtonConfigCard,
-                // per-band ms thresholds with enable/disable per band). That
-                // model has no equivalent here and is intentionally NOT ported.
-                // Instead, every timing value that actually exists in this
-                // app's model is exposed below: hold duration to trigger,
-                // countdown length, cancel-tap gesture, and per-contact
-                // escalation wait. See SPEC.md "Button-duration configuration".
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    IntSlider(
-                        label = stringResource(R.string.setting_hold_seconds),
-                        value = draft.holdSeconds,
-                        range = 3..5,
-                        unit = secondsSuffix,
-                        onChange = viewModel::setHoldSeconds,
+                    OutlinedButton(
+                        onClick = { showWalkthrough = true },
+                        modifier = Modifier.fillMaxWidth()
+                    ) { Text("Ghid Configurare") }
+                    WatchProfileBanner(
+                        manufacturer = draft.watchManufacturer,
+                        nativeProfile = draft.watchNativeProfile,
+                        currentProfile = draft.watchProfile,
+                        onSetProfile = viewModel::setWatchProfile
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        "${stringResource(R.string.setting_hold_seconds)}: ${draft.holdSeconds}$secondsSuffix",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    PressTimelineStrip(
+                        holdSeconds = draft.holdSeconds,
+                        onSetThreshold = viewModel::setHoldSeconds
                     )
                     Text(
                         stringResource(R.string.setting_hold_seconds_help),
@@ -266,6 +275,13 @@ fun MainScreen(
                     Text(stringResource(R.string.test_dialog_cancel))
                 }
             },
+        )
+    }
+
+    if (showWalkthrough) {
+        WalkthroughDialog(
+            brand = com.savemebutton.shared.detectKnownBrand(draft.watchManufacturer).key,
+            onDismiss = { showWalkthrough = false }
         )
     }
 }
@@ -492,4 +508,130 @@ private fun ContactRow(
             modifier = Modifier.fillMaxWidth(),
         )
     }
+}
+
+@Composable
+private fun WatchProfileBanner(
+    manufacturer: String,
+    nativeProfile: WatchProfile,
+    currentProfile: WatchProfile,
+    onSetProfile: (WatchProfile) -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        val title = if (manufacturer.isNotBlank()) "Watch detected: ${manufacturer.replaceFirstChar { it.uppercase() }}" else "Watch Profile"
+        Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+        ProfileCombo(native = nativeProfile, current = currentProfile, onSelect = onSetProfile)
+        Text(
+            if (currentProfile == WatchProfile.OTHER) "Configurable universal profile. Drag the slider to adjust hold threshold."
+            else "Fixed mapping, tested for your watch.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+        )
+    }
+}
+
+@Composable
+private fun PressTimelineStrip(
+    holdSeconds: Int,
+    onSetThreshold: (Int) -> Unit,
+) {
+    val visMax = 5000f
+    val handleColor = MaterialTheme.colorScheme.onSurface
+    val accentColor = SaveMeRed
+    val currentMs = androidx.compose.runtime.rememberUpdatedState(holdSeconds * 1000)
+    val onThr = androidx.compose.runtime.rememberUpdatedState(onSetThreshold)
+    Canvas(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(54.dp)
+            .pointerInput(Unit) {
+                detectDragGestures(
+                    onDrag = { change, _ ->
+                        val w = size.width.toFloat()
+                        val raw = (change.position.x / w) * visMax
+                        val ms = (raw / 1000f).roundToInt()
+                        onThr.value(ms.coerceIn(3, 5))
+                        change.consume()
+                    }
+                )
+            }
+    ) {
+        val w = size.width
+        val axisY = size.height / 2f
+        fun xOf(ms: Int) = (ms / visMax) * w
+        drawLine(handleColor.copy(alpha = 0.35f), Offset(0f, axisY), Offset(w, axisY), strokeWidth = 2.dp.toPx(), cap = StrokeCap.Round)
+        // Half-second tick marks: the axis is LINEAR (x ∝ ms); the ticks make
+        // the proportion visible so equal durations read as equal lengths.
+        var tick = 500
+        while (tick < visMax.toInt()) {
+            val tx = xOf(tick)
+            drawLine(handleColor.copy(alpha = 0.5f), Offset(tx, axisY - 8.dp.toPx()), Offset(tx, axisY + 8.dp.toPx()), strokeWidth = 2.dp.toPx(), cap = StrokeCap.Round)
+            tick += 500
+        }
+        val x = xOf(currentMs.value)
+        drawLine(accentColor, Offset(0f, axisY), Offset(x, axisY), strokeWidth = 10.dp.toPx(), cap = StrokeCap.Round)
+        drawLine(handleColor, Offset(x, axisY - 16.dp.toPx()), Offset(x, axisY + 16.dp.toPx()), strokeWidth = 4.dp.toPx(), cap = StrokeCap.Round)
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ProfileCombo(
+    native: WatchProfile,
+    current: WatchProfile,
+    onSelect: (WatchProfile) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val options = when {
+        native.isPowerButtonProfile() -> listOf("Power" to native, "Generic" to WatchProfile.OTHER)
+        native.isNonPowerButtonProfile() -> listOf("Non-Power" to native, "Generic" to WatchProfile.OTHER)
+        else -> listOf("Power" to WatchProfile.ONEPLUS, "Non-Power" to WatchProfile.OTHER_ACCESSIBILITY, "Generic" to WatchProfile.OTHER)
+    }
+    val selectedText = options.firstOrNull { it.second == current }?.first ?: "Generic"
+
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
+        OutlinedTextField(
+            readOnly = true,
+            value = selectedText,
+            onValueChange = {},
+            label = { Text("Watch Profile") },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier = Modifier.menuAnchor().fillMaxWidth(),
+        )
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            options.filter { it.second != current }.forEach { (lbl, prof) ->
+                DropdownMenuItem(
+                    text = { Text(lbl) },
+                    onClick = { onSelect(prof); expanded = false },
+                )
+            }
+        }
+    }
+}
+@Composable
+private fun WalkthroughDialog(
+    brand: com.savemebutton.shared.BrandKey,
+    onDismiss: () -> Unit
+) {
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Ghid Configurare") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("Step 1: Set up on the watch.", fontWeight = FontWeight.Bold)
+                Text(when (brand) {
+                    com.savemebutton.shared.BrandKey.SAMSUNG -> "Assign to double-press action of the Home button."
+                    com.savemebutton.shared.BrandKey.ONEPLUS -> "Assign to the short-press action of the Power button."
+                    else -> "Assign to the action available for launching apps in Watch Settings."
+                })
+                Text("Step 2: Set up on the phone.", fontWeight = FontWeight.Bold)
+                Text("Configure your emergency contacts and SOS behavior.")
+                Text("Step 3: Using the buttons.", fontWeight = FontWeight.Bold)
+                Text("Press and hold the configured button until the SOS sequence starts.")
+            }
+        },
+        confirmButton = {
+            androidx.compose.material3.TextButton(onClick = onDismiss) { Text("OK") }
+        }
+    )
 }

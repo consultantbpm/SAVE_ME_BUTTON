@@ -99,6 +99,7 @@ class MainViewModel(app: PhoneApplication) : AndroidViewModel(app) {
     fun setSirenVolume(value: Float) { _draft.value = _draft.value.copy(sirenVolume = value) }
     fun setLoudMinutePulse(value: Boolean) { _draft.value = _draft.value.copy(loudMinutePulse = value) }
     fun setVoicemailTrapEscape(value: Boolean) { _draft.value = _draft.value.copy(voicemailTrapEscape = value) }
+    fun setWatchProfile(value: com.savemebutton.shared.WatchProfile) { _draft.value = _draft.value.copy(watchProfile = value) }
 
     private val _testDialogShown = MutableStateFlow(false)
     val testDialogShown: StateFlow<Boolean> = _testDialogShown

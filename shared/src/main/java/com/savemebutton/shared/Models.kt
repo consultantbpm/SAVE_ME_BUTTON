@@ -28,6 +28,9 @@ data class SosConfig(
     val sirenVolume: Float = 1.0f,
     val loudMinutePulse: Boolean = true,
     val voicemailTrapEscape: Boolean = true,
+    val watchProfile: WatchProfile = WatchProfile.OTHER,
+    val watchNativeProfile: WatchProfile = WatchProfile.OTHER,
+    val watchManufacturer: String = "",
 ) {
     fun normalized(): SosConfig {
         val padded = (contacts + List(3) { Contact() }).take(3)
@@ -97,3 +100,31 @@ sealed class SosState {
     @Serializable object Stopped : SosState()
     @Serializable data class Done(val reachedIndex: Int, val answered: Boolean) : SosState()
 }
+
+@Serializable
+enum class WatchProfile {
+    ONEPLUS,
+    SAMSUNG,
+    OTHER,
+    OTHER_ACCESSIBILITY,
+    OTHER_NO_ACCESSIBILITY;
+
+    fun isPowerButtonProfile(): Boolean = this == ONEPLUS || this == OTHER_NO_ACCESSIBILITY
+    fun isNonPowerButtonProfile(): Boolean = this == SAMSUNG || this == OTHER_ACCESSIBILITY
+}
+
+fun detectNativeWatchProfile(manufacturer: String = android.os.Build.MANUFACTURER): WatchProfile = when (manufacturer.lowercase()) {
+    "samsung" -> WatchProfile.SAMSUNG
+    "oneplus" -> WatchProfile.ONEPLUS
+    "google", "xiaomi", "oppo" -> WatchProfile.OTHER_ACCESSIBILITY
+    else -> WatchProfile.OTHER
+}
+
+@Serializable
+data class WatchProfileInfo(
+    val nativeProfile: WatchProfile,
+    val currentProfile: WatchProfile,
+    val manufacturer: String = "",
+    val model: String = "",
+    val appVersion: Long = 0,
+)
