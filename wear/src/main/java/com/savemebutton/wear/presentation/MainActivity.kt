@@ -206,7 +206,7 @@ class MainActivity : ComponentActivity() {
             Log.d(TAG, "Samsung + a11y disabled → auto-opening accessibility settings")
             openAccessibilitySettings()
         }
-        sendBroadcast(android.content.Intent("com.vibrorituals.crown.ACTION_CHILD_APP_RESUMED"))
+        sendBroadcast(android.content.Intent("com.vibrorituals.crown.ACTION_CHILD_APP_RESUMED").putExtra("senderPackage", packageName))
     }
 
     private fun isSamsung(): Boolean =
@@ -238,7 +238,7 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onPause() {
-        sendBroadcast(android.content.Intent("com.vibrorituals.crown.ACTION_CHILD_APP_PAUSED"))
+        sendBroadcast(android.content.Intent("com.vibrorituals.crown.ACTION_CHILD_APP_PAUSED").putExtra("senderPackage", packageName))
         super.onPause()
         stopVibration()
         handler.removeCallbacks(triggerRunnable)
