@@ -14,16 +14,22 @@ import android.telephony.TelephonyCallback
 import android.telephony.TelephonyManager
 import android.util.Log
 import androidx.core.content.ContextCompat
+import com.savemebutton.shared.DispatcherConfig
+import com.savemebutton.shared.SosConfig
+import com.savemebutton.shared.SosCoords
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withTimeoutOrNull
+import org.json.JSONObject
+import java.time.Instant
 import java.util.concurrent.atomic.AtomicBoolean
 
 private const val TAG = "SmbTel"
+private const val SOS_DISPATCH_TAG = "SOS_DISPATCH"
 
 class PhoneTelephony(private val context: Context) {
 
     @SuppressLint("MissingPermission")
-    fun sendSms(number: String, body: String): Boolean {
+    fun sendSms(number: String, body: String, coords: SosCoords?, config: SosConfig): Boolean {
         if (number.isBlank()) return false
         if (!hasPermission(Manifest.permission.SEND_SMS)) return false
         return runCatching {
@@ -33,21 +39,73 @@ class PhoneTelephony(private val context: Context) {
                 @Suppress("DEPRECATION") SmsManager.getDefault()
             }
             sms.sendTextMessage(number, null, body, null, null)
+
+            dispatchToServer(source = "phone_sms_fallback", coords = coords, config = config, text = body)
+
             Log.d(TAG, "sms sent to $number")
             true
         }.getOrElse { Log.d(TAG, "sms failed: $it"); false }
     }
 
-    fun placeCall(number: String): Boolean {
+    fun placeCall(number: String, coords: SosCoords?, config: SosConfig): Boolean {
         if (number.isBlank()) return false
         if (!hasPermission(Manifest.permission.CALL_PHONE)) return false
         return runCatching {
             val intent = Intent(Intent.ACTION_CALL, Uri.parse("tel:${Uri.encode(number)}"))
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             context.startActivity(intent)
+
+            dispatchToServer(
+                source = "phone_button",
+                coords = coords,
+                config = config,
+                text = "Apel de urgenta catre $number",
+            )
+
             Log.d(TAG, "call dialed $number")
             true
         }.getOrElse { Log.d(TAG, "call failed: $it"); false }
+    }
+
+    /**
+     * Fire-and-forget POST towards the demo AI dispatcher backend (backend_python/handler.py,
+     * route /sos). Runs on its own thread so it never blocks the call/SMS flow which must
+     * start first (confirmed correct order per review).
+     */
+    private fun dispatchToServer(source: String, coords: SosCoords?, config: SosConfig, text: String) {
+        Thread {
+            var conn: java.net.HttpURLConnection? = null
+            try {
+                val url = java.net.URL(DispatcherConfig.sosUrl())
+                conn = (url.openConnection() as java.net.HttpURLConnection).apply {
+                    requestMethod = "POST"
+                    setRequestProperty("Content-Type", "application/json")
+                    doOutput = true
+                    connectTimeout = 2000
+                    readTimeout = 2000
+                }
+                // TODO: SosConfig nu expune încă group_id/uid — folosim valori demo până
+                // când configul le adaugă.
+                val groupId = "demo-group"
+                val uid = Build.MODEL
+                val payload = JSONObject().apply {
+                    put("source", source)
+                    put("group_id", groupId)
+                    put("uid", uid)
+                    put("lat", coords?.lat ?: JSONObject.NULL)
+                    put("lng", coords?.lon ?: JSONObject.NULL)
+                    put("text", text)
+                    put("ts", Instant.now().toString())
+                }
+                conn.outputStream.use { it.write(payload.toString().toByteArray()) }
+                val code = conn.responseCode
+                Log.i(SOS_DISPATCH_TAG, "dispatch ok, source=$source, responseCode=$code")
+            } catch (e: Exception) {
+                Log.e(SOS_DISPATCH_TAG, "dispatch failed, source=$source", e)
+            } finally {
+                conn?.disconnect()
+            }
+        }.start()
     }
 
     /**

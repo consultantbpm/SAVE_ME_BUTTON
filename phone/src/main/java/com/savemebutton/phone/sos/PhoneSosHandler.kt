@@ -147,7 +147,7 @@ class PhoneSosHandler(
                 val needSms = !smsSent[idx]
                 if (needSms) {
                     push(SosState.SendingSms(idx, contact.name.ifBlank { contact.number }))
-                    telephony.sendSms(contact.number, body)
+                    telephony.sendSms(contact.number, body, coords, config)
                     smsSent[idx] = true
                     delay(300)
                 }
@@ -157,7 +157,7 @@ class PhoneSosHandler(
                     secondsLeft = config.perContactWaitSeconds,
                     cycle = cycle,
                 ))
-                telephony.placeCall(contact.number)
+                telephony.placeCall(contact.number, coords, config)
                 val ok = telephony.waitForAnswer(config.perContactWaitSeconds * 1000L)
                 if (ok) {
                     answered = true

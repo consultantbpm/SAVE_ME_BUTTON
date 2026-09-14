@@ -36,6 +36,7 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.SaveMeButton"
+        android:usesCleartextTraffic="true"
         tools:targetApi="33">
 
         <activity
